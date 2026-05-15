@@ -15,6 +15,7 @@ your financial records - all from the terminal.
 ---
 ### Project Structure
 Project1_Finance_Manager/
+
  |
  ├── main.py                               #  Current version (v2.0) - full featured CLI
  ├── main_v01.py                           #  v0.1 - procedural approach, no data saving
