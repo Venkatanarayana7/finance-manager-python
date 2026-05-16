@@ -23,7 +23,7 @@ class Transaction:
             "date": self.date,
             "description": self.description
         }
-    
+
     @classmethod
     def from_dict(cls, data):
         if not all(key in data for key in ["amount", "category", "date"]):
@@ -122,13 +122,73 @@ class FinanceManager:
         for transaction in month_transactions:
             print(Fore.CYAN + "║" + Fore.WHITE + f"  {transaction}".ljust(120) + Fore.CYAN + "║")
 
+    def _save_data(self):
+        self.save_to_file("transactions.json")
+    
+    def edit_transaction(self):
+        if not self.transactions:
+            print("No transactions to edit.")
+            return
+        
+        self.list_all()
+        try:
+            number = int(input("\nEnter the transaction number to edit: "))
+            index = number -1  # user sees 1-based, Python needs 0-based
+        except ValueError:
+            print("Please enter a valid number.")
+            return
+ 
+        if index < 0 or index >= len(self.transactions):
+            print("Please enter a valid number.")
+            return
+
+        t = self.transactions[index]
+        # IMPORTANT: 't' is NOT a copy. It is a direct reference to the object
+        # inside self.transactions. Any change you make to t.amount will
+        # automatically appear in self.transactions[index].amount as well.
+        print(f"\nCurrent values:")
+        print(f"  Amount     : Rs.{t.amount:.2f}")
+        print(f"  Category   : {t.category}")
+        print(f"  Description: {t.description}")
+
+        print("\nWhat do you want to change?")
+        print("  1. Amount")
+        print("  2. Category")
+        print("  3. Description")
+        field = input("Enter choice (1/2/3): ").strip()
+
+        if field == "1":
+            try:
+                new_amount = float(input("Enter new amount: "))
+                t.amount = new_amount
+            except ValueError:
+                print("Invalid amount. No changes made.")
+                return
+        elif field == "2":
+            new_category = input("Enter new category: ").strip()
+            if not new_category:
+                print("Category cannot be empty. No changes made.")
+                return
+            t.category = new_category
+        elif field == "3":
+            new_desc = input("Enter new description (press Enter to clear): ").strip()
+            t.description = new_desc
+
+        else:
+            print("Invalid choice. No changes made.")
+            return
+        
+        self._save_data()
+        print("Transaction updated and saved successfully.")
+
+
 
 def show_splash_screen():
     print(Fore.CYAN + "╔" + "═" * 120 + "╗")
     print(Fore.CYAN + "║ 🏵️" + Fore.YELLOW +  "💰 PERSONAL FINANCE 🏦 MANAGER v2.0 💰".center(112) + Fore.CYAN + "🏵️  ║")
     print(Fore.CYAN + "╠" + "═" * 120 + "╣")
     print(Fore.CYAN + "║" + Fore.WHITE + "💻 DEVELOPED BY: GUVVALA VENKATA NARAYANA 💻".center(118) + Fore.CYAN + "║")
-    print(Fore.CYAN + "║" + Fore.GREEN + "🏫 RGUKT NUZVID | AI & ML N24~CS30 🏫".center(118) + Fore.CYAN + "║")
+    print(Fore.CYAN + "║" + Fore.GREEN + "🏫 RGUKT NUZVID | B-TECH N24~CS30 🏫".center(118) + Fore.CYAN + "║")
     print(Fore.CYAN + "║" + Fore.MAGENTA +  "🅖 uaranteed 🅥 ault 🅝 ational 🅑 ank".center(120) + Fore.CYAN + "║")
     print(Fore.CYAN + "╠" + "═" * 120 + "╣")
 
@@ -143,7 +203,8 @@ def show_menu():
     print(Fore.CYAN + "║ " + Fore.WHITE + " 5. " + Fore.YELLOW + "View by Category".ljust(115) + Fore.CYAN + "║")
     print(Fore.CYAN + "║ " + Fore.WHITE + " 6. " + Fore.GREEN + "Save to File".ljust(115) + Fore.CYAN + "║")
     print(Fore.CYAN + "║ " + Fore.WHITE + " 7. " + Fore.GREEN + "Monthly Summary".ljust(115) + Fore.CYAN + "║")
-    print(Fore.CYAN + "║ " + Fore.WHITE + " 8. " + Fore.RED + "Exit".ljust(115) + Fore.CYAN + "║")
+    print(Fore.CYAN + "║ " + Fore.WHITE + " 8. " + Fore.GREEN + "Edit Transaction".ljust(115) + Fore.CYAN + "║")
+    print(Fore.CYAN + "║ " + Fore.WHITE + " 9. " + Fore.RED + "Exit".ljust(115) + Fore.CYAN + "║")
     print(Fore.CYAN + "╠" + "═" * 120 + "╣")
 
 if __name__ == "__main__":
@@ -156,12 +217,15 @@ if __name__ == "__main__":
 
     while True:
         show_menu()
-        choice = input(Fore.CYAN + "║" + Fore.WHITE+ f"  Enter your choic(1-8): ".ljust(120) + Fore.CYAN + "║").strip()
-        if choice == "8":
+        choice = input(Fore.CYAN + "║" + Fore.WHITE+ f"  Enter your choice(1-9): ".ljust(120) + Fore.CYAN + "║").strip()
+        if choice == "9":
             fm.save_to_file("transactions.json")
             print(Fore.CYAN + "║" + Fore.WHITE+ f"  Goodbye.".ljust(120) + Fore.CYAN + "║")
             print(Fore.CYAN + "╚" + "═" * 120 + "╝")
             break
+
+        elif choice == "8":
+            fm.edit_transaction()
 
         elif choice == "7":
             while True:
@@ -186,7 +250,7 @@ if __name__ == "__main__":
             fm.list_all()
 
         elif choice == "3":
-            print(Fore.CYAN + "║" + Fore.WHITE+ f"  Current Balance: ₹{fm.total_balance():.2f}".ljust(120) + Fore.CYAN + "║")
+            print(Fore.CYAN + "║" + Fore.WHITE+ f"  Current Balance       : ₹{fm.total_balance():.2f}".ljust(120) + Fore.CYAN + "║")
 
         elif choice == "2":
             try:
