@@ -87,6 +87,51 @@ class FinanceManager:
         print(Fore.CYAN + "║" + Fore.WHITE + f"  Found {len(results)} transaction(s) in Category Total: Rs.{total:.2f}".ljust(120) + Fore.CYAN + "║")
         print(Fore.CYAN + "╠" + "═" * 120 + "╣")
 
+    def search_by_date_range(self):
+        if not self.transactions:
+            print(Fore.CYAN + "║" + Fore.RED + "  No transactions to search.".ljust(118) + Fore.CYAN + " ║")
+            return
+
+        # Get start date with validation loop
+        while True:
+            start_raw = input(Fore.CYAN + "║" + Fore.WHITE + "  Enter start date (YYYY-MM-DD): ".ljust(120) + Fore.CYAN + "║").strip()
+            try:
+                datetime.strptime(start_raw, "%Y-%m-%d") # validates format
+                break
+            except ValueError:
+                print(Fore.CYAN + "║" + Fore.RED + "  ❌ Invalid date. Use YYYY-MM-DD (e.g., 2026-05-01).".ljust(118) + Fore.CYAN + " ║")
+
+        # Get end date with validation loop
+        while True:
+            end_raw = input(Fore.CYAN + "║" + Fore.WHITE + "  Enter end date (YYYY-MM-DD): ".ljust(120) + Fore.CYAN + "║").strip()
+            try:
+                datetime.strptime(end_raw, "%Y-%m-%d")
+                break
+            except ValueError:
+                print(Fore.CYAN + "║" + Fore.RED + "  ❌ Invalid date. Use YYYY-MM-DD (e.g., 2026-05-31).".ljust(118) + Fore.CYAN + " ║")
+
+        # Filter with list comprehension and string comparision
+        results = [t for t in self.transactions if start_raw <= t.date <= end_raw]
+
+        if not results:
+            print(Fore.CYAN + "║" + Fore.RED + f"  No transactions between {start_raw} and {end_raw}.".ljust(118) + Fore.CYAN + " ║")
+            return
+
+        total = sum(t.amount for t in results)
+
+        print(Fore.CYAN + "╠" + "═" * 120 + "╣")
+        print(Fore.CYAN + "║" + Fore.YELLOW + f"  DATE RANGE: {start_raw} --> {end_raw}".center(120) + Fore.CYAN + "║")
+        print(Fore.CYAN + "╠" + "═" * 120 + "╣")
+        print(Fore.CYAN + "║" + Fore.WHITE + " S.NO. Date       Category             Amount        Description".ljust(120) + Fore.CYAN + "║")
+        print(Fore.CYAN + "║" + Fore.WHITE + " " + "-"*118 + Fore.WHITE + " " + Fore.CYAN + "║")
+        for i, t in enumerate(results, 1):
+            print(Fore.CYAN + "║" + Fore.WHITE + self._format_row(t, i).ljust(120) + Fore.CYAN + "║")
+        print(Fore.CYAN + "║" + Fore.WHITE + " " + "-"*118 + Fore.WHITE + " " + Fore.CYAN + "║")
+        print(Fore.CYAN + "║" + Fore.WHITE + f"  Found {len(results)} transaction(s)   Total: Rs.{total:.2f}".ljust(120) + Fore.CYAN + "║")
+        print(Fore.CYAN + "╠" + "═" * 120 + "╣")
+
+
+
 
     def __str__(self):
         total_transactions = len(self.transactions)
@@ -283,11 +328,12 @@ def show_menu():
     print(Fore.CYAN + "║ " + Fore.WHITE + " 3. " + Fore.BLUE + "View Balance".ljust(115) + Fore.CYAN + "║")
     print(Fore.CYAN + "║ " + Fore.WHITE + " 4. " + Fore.MAGENTA + "View All Transactions".ljust(115) + Fore.CYAN + "║")
     print(Fore.CYAN + "║ " + Fore.WHITE + " 5. " + Fore.YELLOW + "Search by Category".ljust(115) + Fore.CYAN + "║")
-    print(Fore.CYAN + "║ " + Fore.WHITE + " 6. " + Fore.GREEN + "Save to File".ljust(115) + Fore.CYAN + "║")
-    print(Fore.CYAN + "║ " + Fore.WHITE + " 7. " + Fore.GREEN + "Monthly Summary".ljust(115) + Fore.CYAN + "║")
-    print(Fore.CYAN + "║ " + Fore.WHITE + " 8. " + Fore.GREEN + "Edit Transaction".ljust(115) + Fore.CYAN + "║")
-    print(Fore.CYAN + "║ " + Fore.WHITE + " 9. " + Fore.GREEN + "Delete Transaction".ljust(115) + Fore.CYAN + "║")
-    print(Fore.CYAN + "║ " + Fore.WHITE + "10. " + Fore.RED + "Exit".ljust(115) + Fore.CYAN + "║")
+    print(Fore.CYAN + "║ " + Fore.WHITE + " 6. " + Fore.YELLOW + "Search by Date Range".ljust(115) + Fore.CYAN + "║")
+    print(Fore.CYAN + "║ " + Fore.WHITE + " 7. " + Fore.GREEN + "Save to File".ljust(115) + Fore.CYAN + "║")
+    print(Fore.CYAN + "║ " + Fore.WHITE + " 8. " + Fore.GREEN + "Monthly Summary".ljust(115) + Fore.CYAN + "║")
+    print(Fore.CYAN + "║ " + Fore.WHITE + " 9. " + Fore.GREEN + "Edit Transaction".ljust(115) + Fore.CYAN + "║")
+    print(Fore.CYAN + "║ " + Fore.WHITE + "10. " + Fore.GREEN + "Delete Transaction".ljust(115) + Fore.CYAN + "║")
+    print(Fore.CYAN + "║ " + Fore.WHITE + "11. " + Fore.RED + "Exit".ljust(115) + Fore.CYAN + "║")
     print(Fore.CYAN + "╠" + "═" * 120 + "╣")
 
 if __name__ == "__main__":
@@ -300,26 +346,26 @@ if __name__ == "__main__":
 
     while True:
         show_menu()
-        choice = input(Fore.CYAN + "║" + Fore.WHITE+ f"  Enter your choice(1-10): ".ljust(120) + Fore.CYAN + "║")
-        if choice == "10":
+        choice = input(Fore.CYAN + "║" + Fore.WHITE+ f"  Enter your choice(1-11): ".ljust(120) + Fore.CYAN + "║")
+        if choice == "11":
             fm.save_to_file("transactions.json")
             print(Fore.CYAN + "║" + Fore.WHITE+ f"  Goodbye.".ljust(120) + Fore.CYAN + "║")
             print(Fore.CYAN + "╚" + "═" * 120 + "╝")
             break
         
-        elif choice == "9":
+        elif choice == "10":
             print(Fore.CYAN + "╠" + "═" * 120 + "╣")
             print(Fore.CYAN + "║" + Fore.YELLOW + "DELETE TRANSACTION".center(120) + Fore.CYAN + "║")
             print(Fore.CYAN + "╠" + "═" * 120 + "╣")
             fm.delete_transaction()
 
-        elif choice == "8":
+        elif choice == "9":
             print(Fore.CYAN + "╠" + "═" * 120 + "╣")
             print(Fore.CYAN + "║" + Fore.YELLOW + "EDIT TRANSACTION".center(120) + Fore.CYAN + "║")
             print(Fore.CYAN + "╠" + "═" * 120 + "╣")
             fm.edit_transaction()
 
-        elif choice == "7":
+        elif choice == "8":
             print(Fore.CYAN + "╠" + "═" * 120 + "╣")
             print(Fore.CYAN + "║" + Fore.YELLOW + "MONTHLY SUMMARY".center(120) + Fore.CYAN + "║")
             print(Fore.CYAN + "╠" + "═" * 120 + "╣")
@@ -332,13 +378,18 @@ if __name__ == "__main__":
                 except ValueError:
                     print(Fore.CYAN + "║" + Fore.WHITE+ f"  ❌ Invalid entry. Please ensure the year and month are correct(e.g., 2026-06).".ljust(118) + Fore.CYAN + " ║")
                     
-        elif choice == "6":
+        elif choice == "7":
             print(Fore.CYAN + "╠" + "═" * 120 + "╣")
             print(Fore.CYAN + "║" + Fore.YELLOW + "SAVE TO FILE".center(120) + Fore.CYAN + "║")
             print(Fore.CYAN + "╠" + "═" * 120 + "╣")
             fm.save_to_file("transactions.json")
             print(Fore.CYAN + "║" + Fore.WHITE+ f"  THANK YOU FOR CHOOSINNG RUKT-NUZVID SECURE BANK.".ljust(120) + Fore.CYAN + "║")
             
+        elif choice == "6":
+            print(Fore.CYAN + "╠" + "═" * 120 + "╣")
+            print(Fore.CYAN + "║" + Fore.YELLOW + "📅 SEARCH BY DATE RANGE".center(118) + Fore.CYAN + " ║")
+            print(Fore.CYAN + "╠" + "═" * 120 + "╣")
+            fm.search_by_date_range()
 
         elif choice =="5":
             print(Fore.CYAN + "╠" + "═" * 120 + "╣")
