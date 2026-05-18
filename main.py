@@ -56,20 +56,37 @@ class FinanceManager:
             print(Fore.CYAN + "║" + Fore.WHITE + self._format_row(t, number).ljust(120) + Fore.CYAN + "║")
         print(Fore.CYAN + "║" + Fore.WHITE + " " + "-"*118 + Fore.WHITE + " " + Fore.CYAN + "║")
 
-    def list_by_category(self, category):
-        number = 1
+
+    def search_by_category(self):
+        if not self.transactions:
+            print(Fore.CYAN + "║" + Fore.RED + "  No transactions to search.".ljust(118) + Fore.CYAN + " ║")
+            return
+        
+        search_term = input(Fore.CYAN + "║" + Fore.WHITE + "  Enter category to search: ".ljust(120) + Fore.CYAN + "║").strip()
+        if not search_term:
+            print(Fore.CYAN + "║" + Fore.RED + "  ❌ Search term cannot be empty.".ljust(118) + Fore.CYAN + " ║")
+            return
+
+        # filter transactions with List comprehension
+        results = [t for t in self.transactions if t.category.lower() == search_term.lower()]
+
+        if not results:
+            print(Fore.CYAN + "║" + Fore.RED + f"  No transactions found for '{search_term}'.".ljust(120) + Fore.CYAN + "║")
+            return
+        
+        total = sum(t.amount for t in results) # we call this as generator expression
+
         print(Fore.CYAN + "╠" + "═" * 120 + "╣")
-        print(Fore.CYAN + "║" + Fore.YELLOW + f"LIST BY {category.upper()} CATEGORY".center(120) + Fore.CYAN + "║")
+        print(Fore.CYAN + "║" + Fore.YELLOW + f"  SEARCH: {search_term.upper()}".center(120) + Fore.CYAN + "║")
         print(Fore.CYAN + "╠" + "═" * 120 + "╣")
         print(Fore.CYAN + "║" + Fore.WHITE + " S.NO. Date       Category             Amount        Description".ljust(120) + Fore.CYAN + "║")
         print(Fore.CYAN + "║" + Fore.WHITE + " " + "-"*118 + Fore.WHITE + " " + Fore.CYAN + "║")
-        for transaction in self.transactions:
-            if transaction.category.lower() == category.lower():
-                print(Fore.CYAN + "║" + Fore.WHITE + self._format_row(transaction, number).ljust(120) + Fore.CYAN + "║")
-                number += 1
+        for i, t in enumerate(results, 1):
+            print(Fore.CYAN + "║" + Fore.WHITE + self._format_row(t, i).ljust(120) + Fore.CYAN + "║")
         print(Fore.CYAN + "║" + Fore.WHITE + " " + "-"*118 + Fore.WHITE + " " + Fore.CYAN + "║")
-        if number == 1:
-            print(Fore.CYAN + "║" + Fore.WHITE+ f"  No transactions found for {category} category.".ljust(120) + Fore.CYAN + "║")
+        print(Fore.CYAN + "║" + Fore.WHITE + f"  Found {len(results)} transaction(s) in Category Total: Rs.{total:.2f}".ljust(120) + Fore.CYAN + "║")
+        print(Fore.CYAN + "╠" + "═" * 120 + "╣")
+
 
     def __str__(self):
         total_transactions = len(self.transactions)
@@ -237,7 +254,7 @@ class FinanceManager:
         t = self.transactions[index]
         # Show what is about to be erased
         print(Fore.CYAN + "║" + Fore.WHITE + f"  You are about to delete:".ljust(120) + Fore.CYAN + "║")
-        print(Fore.CYAN + "║" + Fore.WHITE + f"    {self._format_row(t)}".ljust(120) + Fore.CYAN + "║")
+        print(Fore.CYAN + "║" + Fore.WHITE + f"  {self._format_row(t)}".ljust(120) + Fore.CYAN + "║")
 
         confirm = input(Fore.CYAN + "║" + Fore.RED + "  Are you sure? Type 'yes' to confirm: ".lower().ljust(120) + Fore.CYAN + "║").strip().lower()
 
@@ -265,7 +282,7 @@ def show_menu():
     print(Fore.CYAN + "║ " + Fore.WHITE + " 2. " + Fore.RED + "Add Expense".ljust(115) + Fore.CYAN + "║")
     print(Fore.CYAN + "║ " + Fore.WHITE + " 3. " + Fore.BLUE + "View Balance".ljust(115) + Fore.CYAN + "║")
     print(Fore.CYAN + "║ " + Fore.WHITE + " 4. " + Fore.MAGENTA + "View All Transactions".ljust(115) + Fore.CYAN + "║")
-    print(Fore.CYAN + "║ " + Fore.WHITE + " 5. " + Fore.YELLOW + "View by Category".ljust(115) + Fore.CYAN + "║")
+    print(Fore.CYAN + "║ " + Fore.WHITE + " 5. " + Fore.YELLOW + "Search by Category".ljust(115) + Fore.CYAN + "║")
     print(Fore.CYAN + "║ " + Fore.WHITE + " 6. " + Fore.GREEN + "Save to File".ljust(115) + Fore.CYAN + "║")
     print(Fore.CYAN + "║ " + Fore.WHITE + " 7. " + Fore.GREEN + "Monthly Summary".ljust(115) + Fore.CYAN + "║")
     print(Fore.CYAN + "║ " + Fore.WHITE + " 8. " + Fore.GREEN + "Edit Transaction".ljust(115) + Fore.CYAN + "║")
@@ -325,10 +342,9 @@ if __name__ == "__main__":
 
         elif choice =="5":
             print(Fore.CYAN + "╠" + "═" * 120 + "╣")
-            print(Fore.CYAN + "║" + Fore.YELLOW + "VIEW BY CATEGORY".center(120) + Fore.CYAN + "║")
+            print(Fore.CYAN + "║" + Fore.YELLOW + "🔍 SEARCH BY CATEGORY".center(118) + Fore.CYAN + " ║")
             print(Fore.CYAN + "╠" + "═" * 120 + "╣")
-            cat = input(Fore.CYAN + "║" + Fore.WHITE+ f"  Enter category to filter: ".ljust(120) + Fore.CYAN + "║").strip()
-            fm.list_by_category(cat)
+            fm.search_by_category()
         
         elif choice == "4":
             print(Fore.CYAN + "╠" + "═" * 120 + "╣")
