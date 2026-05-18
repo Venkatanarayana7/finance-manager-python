@@ -46,17 +46,46 @@ class FinanceManager:
         return sum([transaction.amount for transaction in self.transactions]) 
     
     def list_all(self):
-        for transaction in self.transactions:
-            print(Fore.CYAN + "║" + Fore.WHITE + f"  {transaction}".ljust(120) + Fore.CYAN + "║")
+        if not self.transactions:
+            print(Fore.CYAN + "║" + Fore.RED + f"  No transactions yet.".ljust(120) + Fore.CYAN + "║")
+            return
+        
+        print(Fore.CYAN + "║" + Fore.WHITE + " S.NO. Date       Category             Amount        Description".ljust(120) + Fore.CYAN + "║")
+        print(Fore.CYAN + "║" + Fore.WHITE + " " + "-"*118 + Fore.WHITE + " " + Fore.CYAN + "║")
+        for number, t in enumerate(self.transactions, 1):
+            print(Fore.CYAN + "║" + Fore.WHITE + self._format_row(t, number).ljust(120) + Fore.CYAN + "║")
+        print(Fore.CYAN + "║" + Fore.WHITE + " " + "-"*118 + Fore.WHITE + " " + Fore.CYAN + "║")
 
     def list_by_category(self, category):
+        number = 1
+        print(Fore.CYAN + "╠" + "═" * 120 + "╣")
+        print(Fore.CYAN + "║" + Fore.YELLOW + f"LIST BY {category.upper()} CATEGORY".center(120) + Fore.CYAN + "║")
+        print(Fore.CYAN + "╠" + "═" * 120 + "╣")
+        print(Fore.CYAN + "║" + Fore.WHITE + " S.NO. Date       Category             Amount        Description".ljust(120) + Fore.CYAN + "║")
+        print(Fore.CYAN + "║" + Fore.WHITE + " " + "-"*118 + Fore.WHITE + " " + Fore.CYAN + "║")
         for transaction in self.transactions:
-            if transaction.category == category:
-                print(Fore.CYAN + "║" + Fore.WHITE + f"  {transaction}".ljust(120) + Fore.CYAN + "║")
+            if transaction.category.lower() == category.lower():
+                print(Fore.CYAN + "║" + Fore.WHITE + self._format_row(transaction, number).ljust(120) + Fore.CYAN + "║")
+                number += 1
+        print(Fore.CYAN + "║" + Fore.WHITE + " " + "-"*118 + Fore.WHITE + " " + Fore.CYAN + "║")
+        if number == 1:
+            print(Fore.CYAN + "║" + Fore.WHITE+ f"  No transactions found for {category} category.".ljust(120) + Fore.CYAN + "║")
 
     def __str__(self):
         total_transactions = len(self.transactions)
         return (Fore.CYAN + "║" + Fore.WHITE+ f"  Finance Manager | {total_transactions} transactions | Total: ₹{self.total_balance()}".ljust(120) + Fore.CYAN + "║")
+
+    def _format_row(self, t, number=None):
+        """Return a string like ' 1. 2026-05-16 Food          Rs.  500.00  Luch at mess"""
+        num_str = f"{number:>5}." if number is not None else "    "
+        date_str = t.date
+        cat_str = t.category[:20].ljust(20)        # max 20 chars, pad to 20
+        amt_str = f"Rs.{t.amount:>10.2f}"          # right-aligned 10-wide
+        # description: limit to remaining space (120 - box borders - fields)
+        # We'll allocate 55 chars for description (leaving room for borders)
+        desc_str = (t.description if t.description else "")[:55].ljust(55)
+        return f"{num_str} {date_str} {cat_str} {amt_str} {desc_str}"
+    
 
     def save_to_file(self, filename):
         data  = []
@@ -65,8 +94,7 @@ class FinanceManager:
 
         with open(filename, "w", encoding="utf-8") as f:
             json.dump(data, f, indent=4)
-        print(Fore.CYAN + "║" + Fore.WHITE+ f"  Saved {len(self.transactions)} transactions to {filename}.".ljust(120) + Fore.CYAN + "║")
-
+        print(Fore.CYAN + "║ " + Fore.GREEN + " 💾 Data saved to transactions.json".ljust(118) + Fore.CYAN + "║")
     def load_from_file(self, filename):
         try:
             with open(filename, "r", encoding="utf-8") as f:
@@ -116,71 +144,76 @@ class FinanceManager:
         print(Fore.CYAN + "║" + Fore.WHITE + f"  Total Income       :    ₹{total_income}".ljust(120) + Fore.CYAN + "║")
         print(Fore.CYAN + "║" + Fore.WHITE + f"  Total Expense      :    ₹{abs(total_expense)}".ljust(120) + Fore.CYAN + "║")
         print(Fore.CYAN + "║" + Fore.WHITE + f"  Net                :    ₹{net_amount}".ljust(120) + Fore.CYAN + "║")
-        print(Fore.CYAN + "╠" + "═" * 120 + "╣")
+        print(Fore.CYAN + "║" + Fore.WHITE + " " + "-"*118 + Fore.WHITE + " " + Fore.CYAN + "║")
         print(Fore.CYAN + "║" + Fore.YELLOW + "  DETAILS:".ljust(120) + Fore.CYAN + "║")
-        print(Fore.CYAN + "╠" + "═" * 120 + "╣")
+        print(Fore.CYAN + "║" + Fore.WHITE + " " + "-"*118 + Fore.WHITE + " " + Fore.CYAN + "║")
+        number = 1
         for transaction in month_transactions:
-            print(Fore.CYAN + "║" + Fore.WHITE + f"  {transaction}".ljust(120) + Fore.CYAN + "║")
-
+            print(Fore.CYAN + "║" + Fore.WHITE + self._format_row(transaction, number).ljust(120) + Fore.CYAN + "║")
+            number += 1
+        print(Fore.CYAN + "║" + Fore.WHITE + " " + "-"*118 + Fore.WHITE + " " + Fore.CYAN + "║")
+            
     def _save_data(self):
         self.save_to_file("transactions.json")
     
     def edit_transaction(self):
         if not self.transactions:
-            print("No transactions to edit.")
+            print(Fore.CYAN + "║" + Fore.WHITE+ "No transactions to edit.".ljust(120) + Fore.CYAN + "║")
             return
         
         self.list_all()
+        print(Fore.CYAN + "║" + Fore.WHITE + f"  Enter a number between 1 and {len(self.transactions)}".ljust(120) + Fore.CYAN + "║")
         try:
-            number = int(input("\nEnter the transaction number to edit: "))
+            number = int(input(Fore.CYAN + "║" + Fore.WHITE+ "Enter the transaction number to edit: ".ljust(120) + Fore.CYAN + "║"))
             index = number -1  # user sees 1-based, Python needs 0-based
         except ValueError:
-            print("Please enter a valid number.")
+            print(Fore.CYAN + "║" + Fore.WHITE+ "Please enter a valid number.".ljust(120) + Fore.CYAN + "║")
             return
  
         if index < 0 or index >= len(self.transactions):
-            print("Please enter a valid number.")
+            print(Fore.CYAN + "║" + Fore.WHITE+ "Please choose transaction within the transactions.".ljust(120) + Fore.CYAN + " ║")
             return
 
         t = self.transactions[index]
         # IMPORTANT: 't' is NOT a copy. It is a direct reference to the object
         # inside self.transactions. Any change you make to t.amount will
         # automatically appear in self.transactions[index].amount as well.
-        print(f"\nCurrent values:")
-        print(f"  Amount     : Rs.{t.amount:.2f}")
-        print(f"  Category   : {t.category}")
-        print(f"  Description: {t.description}")
 
-        print("\nWhat do you want to change?")
-        print("  1. Amount")
-        print("  2. Category")
-        print("  3. Description")
-        field = input("Enter choice (1/2/3): ").strip()
+        print(Fore.CYAN + "║" + Fore.WHITE+ f"Current values:".ljust(120) + Fore.CYAN + "║")
+        print(Fore.CYAN + "║" + Fore.WHITE+ f"  Amount     : Rs.{t.amount:.2f}".ljust(120) + Fore.CYAN + "║")
+        print(Fore.CYAN + "║" + Fore.WHITE+ f"  Category   : {t.category}".ljust(120) + Fore.CYAN + "║")
+        print(Fore.CYAN + "║" + Fore.WHITE+ f"  Description: {t.description}".ljust(120) + Fore.CYAN + "║")
 
+        print(Fore.CYAN + "║" + Fore.WHITE+ f"What do you want to change?".ljust(120) + Fore.CYAN + "║")
+        print(Fore.CYAN + "║" + Fore.WHITE+ f"  1. Amount".ljust(120) + Fore.CYAN + "║")
+        print(Fore.CYAN + "║" + Fore.WHITE+ f"  2. Category".ljust(120) + Fore.CYAN + "║")
+        print(Fore.CYAN + "║" + Fore.WHITE+ f"  3. Description".ljust(120) + Fore.CYAN + "║")
+
+        field = input(Fore.CYAN + "║" + Fore.WHITE+ "Enter choice (1/2/3): ".strip().ljust(120) + Fore.CYAN + "║")
+    
         if field == "1":
             try:
-                new_amount = float(input("Enter new amount: "))
+                new_amount = float(input(Fore.CYAN + "║" + Fore.WHITE+ "Enter new amount: ".ljust(120) + Fore.CYAN + "║"))
                 t.amount = new_amount
             except ValueError:
-                print("Invalid amount. No changes made.")
+                print(Fore.CYAN + "║" + Fore.RED + "  ❌ Invalid amount. No changes made.".ljust(118) + Fore.CYAN + " ║")
                 return
         elif field == "2":
-            new_category = input("Enter new category: ").strip()
+            new_category = input(Fore.CYAN + "║" + Fore.WHITE+ "Enter new category: ".strip().ljust(120) + Fore.CYAN + "║")
             if not new_category:
-                print("Category cannot be empty. No changes made.")
+                print(Fore.CYAN + "║" + Fore.RED + "  ❌ Category cannot be empty. No changes made.".ljust(118) + Fore.CYAN + " ║")
                 return
             t.category = new_category
         elif field == "3":
-            new_desc = input("Enter new description (press Enter to clear): ").strip()
+            new_desc = input(Fore.CYAN + "║" + Fore.WHITE+ "Enter new description (press Enter to clear): ".strip().ljust(120) + Fore.CYAN + "║")
             t.description = new_desc
 
         else:
-            print("Invalid choice. No changes made.")
+            print(Fore.CYAN + "║" + Fore.RED + "  ❌ Invalid choice. No changes made.".ljust(118) + Fore.CYAN + " ║")
             return
         
         self._save_data()
-        print("Transaction updated and saved successfully.")
-
+        print(Fore.CYAN + "║" + Fore.GREEN + f"  ✔️  Transaction updated and saved successfully.".ljust(120) + Fore.CYAN + " ║")
 
 
 def show_splash_screen():
@@ -217,7 +250,7 @@ if __name__ == "__main__":
 
     while True:
         show_menu()
-        choice = input(Fore.CYAN + "║" + Fore.WHITE+ f"  Enter your choice(1-9): ".ljust(120) + Fore.CYAN + "║").strip()
+        choice = input(Fore.CYAN + "║" + Fore.WHITE+ f"  Enter your choice(1-9): ".ljust(120) + Fore.CYAN + "║")
         if choice == "9":
             fm.save_to_file("transactions.json")
             print(Fore.CYAN + "║" + Fore.WHITE+ f"  Goodbye.".ljust(120) + Fore.CYAN + "║")
@@ -225,9 +258,15 @@ if __name__ == "__main__":
             break
 
         elif choice == "8":
+            print(Fore.CYAN + "╠" + "═" * 120 + "╣")
+            print(Fore.CYAN + "║" + Fore.YELLOW + "EDIT TRANSACTION".center(120) + Fore.CYAN + "║")
+            print(Fore.CYAN + "╠" + "═" * 120 + "╣")
             fm.edit_transaction()
 
         elif choice == "7":
+            print(Fore.CYAN + "╠" + "═" * 120 + "╣")
+            print(Fore.CYAN + "║" + Fore.YELLOW + "MONTHLY SUMMARY".center(120) + Fore.CYAN + "║")
+            print(Fore.CYAN + "╠" + "═" * 120 + "╣")
             while True:
                 try:
                     input_month = input(Fore.CYAN + "║" + Fore.WHITE+ f"  Enter month in YYYY-MM format: ".ljust(120) + Fore.CYAN + "║").strip()
@@ -238,56 +277,89 @@ if __name__ == "__main__":
                     print(Fore.CYAN + "║" + Fore.WHITE+ f"  ❌ Invalid entry. Please ensure the year and month are correct(e.g., 2026-06).".ljust(118) + Fore.CYAN + " ║")
                     
         elif choice == "6":
+            print(Fore.CYAN + "╠" + "═" * 120 + "╣")
+            print(Fore.CYAN + "║" + Fore.YELLOW + "SAVE TO FILE".center(120) + Fore.CYAN + "║")
+            print(Fore.CYAN + "╠" + "═" * 120 + "╣")
             fm.save_to_file("transactions.json")
             print(Fore.CYAN + "║" + Fore.WHITE+ f"  THANK YOU FOR CHOOSINNG RUKT-NUZVID SECURE BANK.".ljust(120) + Fore.CYAN + "║")
             
 
         elif choice =="5":
+            print(Fore.CYAN + "╠" + "═" * 120 + "╣")
+            print(Fore.CYAN + "║" + Fore.YELLOW + "VIEW BY CATEGORY".center(120) + Fore.CYAN + "║")
+            print(Fore.CYAN + "╠" + "═" * 120 + "╣")
             cat = input(Fore.CYAN + "║" + Fore.WHITE+ f"  Enter category to filter: ".ljust(120) + Fore.CYAN + "║").strip()
             fm.list_by_category(cat)
         
         elif choice == "4":
+            print(Fore.CYAN + "╠" + "═" * 120 + "╣")
+            print(Fore.CYAN + "║" + Fore.YELLOW + "📋 VIEW ALL TRANSACTIONS".center(118) + Fore.CYAN + " ║")
+            print(Fore.CYAN + "╠" + "═" * 120 + "╣")
             fm.list_all()
 
         elif choice == "3":
+            print(Fore.CYAN + "╠" + "═" * 120 + "╣")
+            print(Fore.CYAN + "║" + Fore.YELLOW + "📊 VIEW BALANCE".center(118) + Fore.CYAN + " ║")
+            print(Fore.CYAN + "╠" + "═" * 120 + "╣")
             print(Fore.CYAN + "║" + Fore.WHITE+ f"  Current Balance       : ₹{fm.total_balance():.2f}".ljust(120) + Fore.CYAN + "║")
 
         elif choice == "2":
-            try:
-                amount = float(input(Fore.CYAN + "║" + Fore.WHITE+ f"  Enter amount (will be deducted)".ljust(120) + Fore.CYAN + "║"))
-                if amount <= 0:
-                    print(Fore.CYAN + "║" + Fore.WHITE+ f"  Amount must be positive.".ljust(120) + Fore.CYAN + "║")
+            # ADD EXPENSE
+            print(Fore.CYAN + "║" + Fore.GREEN + f"  ➖ ADD EXPENSE".ljust(118) + Fore.CYAN + " ║")
+            # --- get amount ---
+            while True:
+                raw = input(Fore.CYAN + "║" + Fore.WHITE+ f"  Enter amount: ".ljust(120) + Fore.CYAN + "║").strip()
+                try:
+                    amount = float(raw)
+                    if amount <= 0:
+                        print(Fore.CYAN + "║" + Fore.RED + "  ❌ Amount must be positive.".ljust(118) + Fore.CYAN + " ║")
+                        continue
+                    break
+                except ValueError:
+                    print(Fore.CYAN + "║" + Fore.RED + "  ❌ Invalid number. Please enter digits only.".ljust(118) + Fore.CYAN + " ║")
+            # --- get category ---
+            while True:
+                cat = input(Fore.CYAN + "║" + Fore.WHITE + "  Enter category: ".ljust(120) + Fore.CYAN + "║").strip()
+                if not cat or len(cat.strip()) < 3 :
+                    print(Fore.CYAN + "║" + Fore.RED + "  ❌ Category must be at least 3 characters.".ljust(118) + Fore.CYAN + " ║")
                     continue
+                break
+            # ---description (optional) ---
+            desc = input(Fore.CYAN + "║" + Fore.WHITE + "  Enter description (optional): ".ljust(120) + Fore.CYAN + "║").strip()
+            today = date.today().strftime("%Y-%m-%d")
+            t = Transaction(-amount, cat, today, desc)
+            fm.add_transaction(t)
+            # --- success with one-line transaction ---
+            print(Fore.CYAN + "║" + Fore.GREEN + f"  ✔️  Added: {t}".ljust(120) + Fore.CYAN + " ║")
 
-                category = input(Fore.CYAN + "║" + Fore.WHITE+ f"  Enter category: ".ljust(120) + Fore.CYAN + "║").strip()
-                if not category:
-                    print(Fore.CYAN + "║" + Fore.WHITE+ f"  Category required.".ljust(120) + Fore.CYAN + "║")
-                    continue
-
-                desc = input(Fore.CYAN + "║" + Fore.WHITE+ f"  Enter description (optional): ".ljust(120) + Fore.CYAN + "║").strip()
-                today = date.today().strftime("%Y-%m-%d")
-                t = Transaction(-amount, category, today, desc)
-                fm.add_transaction(t)
-                print(Fore.CYAN + "║" + Fore.WHITE+ f"  ✔️  Expense added Successfully!".ljust(120) + Fore.CYAN + " ║")
-            except ValueError:
-                print(Fore.CYAN + "║" + Fore.RED+ f"  ❌ Invalid amount. Please enter a number.".ljust(118) + Fore.CYAN + " ║")
-    
         elif choice == "1":
-            try:
-                amount = float(input(Fore.CYAN + "║" + Fore.WHITE+ f"  Enter amount: ".ljust(120) + Fore.CYAN + "║"))
-                if amount <= 0:
-                    print(Fore.CYAN + "║" + Fore.WHITE+ f"  Amount must be positive.".ljust(120) + Fore.CYAN + "║")
+            # ADD INCOME
+            print(Fore.CYAN + "║" + Fore.GREEN + f"  ➕ ADD INCOME".ljust(118) + Fore.CYAN + " ║")
+            # --- get amount ---
+            while True:
+                raw = input(Fore.CYAN + "║" + Fore.WHITE+ f"  Enter amount: ".ljust(120) + Fore.CYAN + "║").strip()
+                try:
+                    amount = float(raw)
+                    if amount <= 0:
+                        print(Fore.CYAN + "║" + Fore.RED + "  ❌ Amount must be positive.".ljust(118) + Fore.CYAN + " ║")
+                        continue
+                    break
+                except ValueError:
+                    print(Fore.CYAN + "║" + Fore.RED + "  ❌ Invalid number. Please enter digits only.".ljust(118) + Fore.CYAN + " ║")
+            # --- get category ---
+            while True:
+                cat = input(Fore.CYAN + "║" + Fore.WHITE + "  Enter category: ".ljust(120) + Fore.CYAN + "║").strip()
+                if not cat or len(cat.strip()) < 3:
+                    print(Fore.CYAN + "║" + Fore.RED + "  ❌ Category must be at least 3 characters.".ljust(118) + Fore.CYAN + " ║")
                     continue
-                category = input(Fore.CYAN + "║" + Fore.WHITE+ f"  Enter category: ".ljust(120) + Fore.CYAN + "║").strip()
-                if not category:
-                    print(Fore.CYAN + "║" + Fore.WHITE+ f"  Category required.".ljust(120) + Fore.CYAN + "║")
-                    continue
-                desc = input(Fore.CYAN + "║" + Fore.WHITE+ f"  Enter description (optional): ".ljust(120) + Fore.CYAN + "║").strip()
-                today = date.today().strftime("%Y-%m-%d")
-                t = Transaction(amount, category, today, desc)
-                fm.add_transaction(t)
-                print(Fore.CYAN + "║" + Fore.WHITE+ f"  ✔️  Income added Successfully!".ljust(120) + Fore.CYAN + " ║")
-            except ValueError:
-                print(Fore.CYAN + "║" + Fore.RED+ f"  ❌ Invalid amount.Please enter a number.".ljust(118) + Fore.CYAN + " ║")
+                break
+            # ---description (optional) ---
+            desc = input(Fore.CYAN + "║" + Fore.WHITE + "  Enter description (optional): ".ljust(120) + Fore.CYAN + "║").strip()
+            today = date.today().strftime("%Y-%m-%d")
+            t = Transaction(amount, cat, today, desc)
+            fm.add_transaction(t)
+            # --- success with one-line transaction ---
+            print(Fore.CYAN + "║" + Fore.GREEN + f"  ✔️  Added: {t}".ljust(120) + Fore.CYAN + " ║")
+
         else:
             print(Fore.CYAN + "║" + Fore.RED+ f"  🙅 Invalid Choice.".ljust(118) + Fore.CYAN + " ║")
