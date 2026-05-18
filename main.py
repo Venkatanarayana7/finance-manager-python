@@ -215,10 +215,42 @@ class FinanceManager:
         self._save_data()
         print(Fore.CYAN + "║" + Fore.GREEN + f"  ✔️  Transaction updated and saved successfully.".ljust(120) + Fore.CYAN + " ║")
 
+    def delete_transaction(self):
+        if not self.transactions:
+            print(Fore.CYAN + "║" + Fore.RED + " No transactions to delete.".ljust(118) + Fore.CYAN + " ║")
+            return 
+        
+        self.list_all()  # Show numberedlist so user can choose
+
+        print(Fore.CYAN + "║" + Fore.WHITE + f"  Enter a number between 1 and {len(self.transactions)}".ljust(120) + Fore.CYAN + "║")
+        try:
+            number = int(input(Fore.CYAN + "║" + Fore.WHITE + "  Enter the transaction number to delete: ".ljust(120) + Fore.CYAN + "║"))
+            index = number -1
+        except ValueError:
+            print(Fore.CYAN + "║" + Fore.RED + " ❌ Please enter a valid number.".ljust(118) + Fore.CYAN + "║")
+            return
+        
+        if index < 0 or index >= len(self.transactions):
+            print(Fore.CYAN + "║" + Fore.RED + "  ❌ That number is out of range.".ljust(118) + Fore.CYAN + " ║")
+            return
+
+        t = self.transactions[index]
+        # Show what is about to be erased
+        print(Fore.CYAN + "║" + Fore.WHITE + f"  You are about to delete:".ljust(120) + Fore.CYAN + "║")
+        print(Fore.CYAN + "║" + Fore.WHITE + f"    {self._format_row(t)}".ljust(120) + Fore.CYAN + "║")
+
+        confirm = input(Fore.CYAN + "║" + Fore.RED + "  Are you sure? Type 'yes' to confirm: ".lower().ljust(120) + Fore.CYAN + "║").strip().lower()
+
+        if confirm == "yes":
+            self.transactions.pop(index)  # this does the actua deletion
+            self._save_data()              # persist immediately
+            print(Fore.CYAN + "║" + Fore.GREEN + "  ✔️  Transaction deleted and saved.".ljust(120) + Fore.CYAN + " ║")
+        else:
+            print(Fore.CYAN + "║" + Fore.WHITE + "  Deletion cancelled. No changes made.".ljust(120) + Fore.CYAN + "║")
 
 def show_splash_screen():
     print(Fore.CYAN + "╔" + "═" * 120 + "╗")
-    print(Fore.CYAN + "║ 🏵️" + Fore.YELLOW +  "💰 PERSONAL FINANCE 🏦 MANAGER v2.0 💰".center(112) + Fore.CYAN + "🏵️  ║")
+    print(Fore.CYAN + "║ 🏵️" + Fore.YELLOW +  "💰 PERSONAL FINANCE 🏦 MANAGER v3.0 💰".center(112) + Fore.CYAN + "🏵️  ║")
     print(Fore.CYAN + "╠" + "═" * 120 + "╣")
     print(Fore.CYAN + "║" + Fore.WHITE + "💻 DEVELOPED BY: GUVVALA VENKATA NARAYANA 💻".center(118) + Fore.CYAN + "║")
     print(Fore.CYAN + "║" + Fore.GREEN + "🏫 RGUKT NUZVID | B-TECH N24~CS30 🏫".center(118) + Fore.CYAN + "║")
@@ -237,7 +269,8 @@ def show_menu():
     print(Fore.CYAN + "║ " + Fore.WHITE + " 6. " + Fore.GREEN + "Save to File".ljust(115) + Fore.CYAN + "║")
     print(Fore.CYAN + "║ " + Fore.WHITE + " 7. " + Fore.GREEN + "Monthly Summary".ljust(115) + Fore.CYAN + "║")
     print(Fore.CYAN + "║ " + Fore.WHITE + " 8. " + Fore.GREEN + "Edit Transaction".ljust(115) + Fore.CYAN + "║")
-    print(Fore.CYAN + "║ " + Fore.WHITE + " 9. " + Fore.RED + "Exit".ljust(115) + Fore.CYAN + "║")
+    print(Fore.CYAN + "║ " + Fore.WHITE + " 9. " + Fore.GREEN + "Delete Transaction".ljust(115) + Fore.CYAN + "║")
+    print(Fore.CYAN + "║ " + Fore.WHITE + "10. " + Fore.RED + "Exit".ljust(115) + Fore.CYAN + "║")
     print(Fore.CYAN + "╠" + "═" * 120 + "╣")
 
 if __name__ == "__main__":
@@ -250,12 +283,18 @@ if __name__ == "__main__":
 
     while True:
         show_menu()
-        choice = input(Fore.CYAN + "║" + Fore.WHITE+ f"  Enter your choice(1-9): ".ljust(120) + Fore.CYAN + "║")
-        if choice == "9":
+        choice = input(Fore.CYAN + "║" + Fore.WHITE+ f"  Enter your choice(1-10): ".ljust(120) + Fore.CYAN + "║")
+        if choice == "10":
             fm.save_to_file("transactions.json")
             print(Fore.CYAN + "║" + Fore.WHITE+ f"  Goodbye.".ljust(120) + Fore.CYAN + "║")
             print(Fore.CYAN + "╚" + "═" * 120 + "╝")
             break
+        
+        elif choice == "9":
+            print(Fore.CYAN + "╠" + "═" * 120 + "╣")
+            print(Fore.CYAN + "║" + Fore.YELLOW + "DELETE TRANSACTION".center(120) + Fore.CYAN + "║")
+            print(Fore.CYAN + "╠" + "═" * 120 + "╣")
+            fm.delete_transaction()
 
         elif choice == "8":
             print(Fore.CYAN + "╠" + "═" * 120 + "╣")
