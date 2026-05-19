@@ -2,6 +2,7 @@ import json
 from datetime import date, datetime
 from colorama import init, Fore, Style
 init(autoreset=True)
+import os
 #print(Fore.CYAN + "║" + Fore.WHITE+ f"  Enter Text Heres".ljust(120) + Fore.CYAN + "║")
 class Transaction:
     def __init__(self, amount, category, date, description=""):
@@ -36,8 +37,79 @@ class Transaction:
         )
         
 class FinanceManager:
-    def __init__(self):
+    def __init__(self, filename="finance_data.json"):
         self.transactions = []
+        # Get the directory where this script (main.py) is located
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        self.filename = os.path.join(script_dir, filename)
+
+        # Budget storage
+        self.budget_file = os.path.join(script_dir, "budgets.json")
+        self.budgets = {} # category -> limit
+        self._load_budgets() # load existing budgets, if any
+
+    def _load_budgets(self):
+        if os.path.exists(self.budget_file):
+            try:
+                with open(self.budget_file, "r") as f:
+                    self.budgets = json.load(f)
+            except (json.JSONDecodeError, IOError):
+                self.budgets = {}
+        else:
+            self.budgets = {}
+
+    def _save_budgets(self):
+        with open(self.budget_file, "w") as f:
+            json.dump(self.budgets, f, indent=4)
+
+    def set_budget(self):
+        category = input(Fore.CYAN + "║" + Fore.WHITE + "  Enter category to set budget for: ".ljust(120) + Fore.CYAN + "║").strip()
+        if not category:
+             print(Fore.CYAN + "║" + Fore.RED + "  ❌ Category cannot be empty.".ljust(118) + Fore.CYAN + " ║")
+             return
+        while True:
+            raw = input(Fore.CYAN + "║" + Fore.WHITE + f"  Enter monthly budget for '{category}': Rs. ".ljust(120) + Fore.CYAN + "║").strip()
+            try:
+                limit = float(raw)
+                if limit < 0:
+                    print(Fore.CYAN + "║" + Fore.RED + "  ❌ Budget must be a positive number.".ljust(118) + Fore.CYAN + " ║")
+                    continue
+                break
+            except ValueError:
+                print(Fore.CYAN + "║" + Fore.RED + "  ❌ Invalid number. Please enter digits only.".ljust(118) + Fore.CYAN + " ║")
+
+        self.budgets[category] = limit
+        self._save_budgets() 
+        print(Fore.CYAN + "║" + Fore.GREEN + f"  ✔️  Budget set: Rs.{limit:.2f}/month for '{category}'".ljust(120) + Fore.CYAN + " ║")
+
+    def check_budget_status(self):
+        if not self.budgets:
+            print(Fore.CYAN + "║" + Fore.YELLOW + "  No budgets set yet. Use 'Set Budget' first.".ljust(120) + Fore.CYAN + "║")
+            return
+
+        current_month = date.today().strftime("%Y-%m")
+        print(Fore.CYAN + "╠" + "═" * 120 + "╣")
+        print(Fore.CYAN + "║" + Fore.YELLOW + f"  BUDGET STATUS - {current_month}".center(120) + Fore.CYAN + "║")
+        print(Fore.CYAN + "╠" + "═" * 120 + "╣")   
+
+        for category, limit in self.budgets.items():
+            # Filter transactions: must match category (case-insensitive) AND be in current month
+            spent = sum(t.amount for t in self.transactions if t.category.lower() == category.lower() and t.date[:7] == current_month)
+            remaining = limit - spent
+            percentage = (spent / limit * 100) if limit > 0 else 0
+
+            status_color = Fore.GREEN if spent <= limit else Fore.RED
+            status_text = "OK" if spent <= limit else "OVER BUDGET"
+
+            print(Fore.CYAN + "║" + Fore.WHITE + f"  {category}:".ljust(40) + 
+                  f"  Budget: Rs.{limit:>10.2f}  |  Spent: Rs.{spent:>10.2f} ({percentage:5.1f}%)  |  " +
+                    status_color + f"{status_text}".ljust(17) + Fore.CYAN + " ║")
+
+            if spent > limit:
+                print(Fore.CYAN + "║" + Fore.WHITE + f"  ⚠️  Over by Rs.{abs(remaining):.2f}".ljust(120) + Fore.CYAN + "║")
+            else:
+                print(Fore.CYAN + "║" + Fore.WHITE + f"  Remaining: Rs.{remaining:.2f}".ljust(120) + Fore.CYAN + "║")
+            print(Fore.CYAN + "╠" + "═" * 120 + "╣")
         
     def add_transaction(self, transaction):
         self.transactions.append(transaction)
@@ -362,7 +434,7 @@ class FinanceManager:
 
 def show_splash_screen():
     print(Fore.CYAN + "╔" + "═" * 120 + "╗")
-    print(Fore.CYAN + "║ 🏵️" + Fore.YELLOW +  "💰 PERSONAL FINANCE 🏦 MANAGER v3.0 💰".center(112) + Fore.CYAN + "🏵️  ║")
+    print(Fore.CYAN + "║ 🏵️" + Fore.YELLOW +  "💰 PERSONAL FINANCE 🏦 MANAGER v4.0 💰".center(112) + Fore.CYAN + "🏵️  ║")
     print(Fore.CYAN + "╠" + "═" * 120 + "╣")
     print(Fore.CYAN + "║" + Fore.WHITE + "💻 DEVELOPED BY: GUVVALA VENKATA NARAYANA 💻".center(118) + Fore.CYAN + "║")
     print(Fore.CYAN + "║" + Fore.GREEN + "🏫 RGUKT NUZVID | B-TECH N24~CS30 🏫".center(118) + Fore.CYAN + "║")
@@ -384,7 +456,9 @@ def show_menu():
     print(Fore.CYAN + "║ " + Fore.WHITE + " 9. " + Fore.GREEN + "Edit Transaction".ljust(115) + Fore.CYAN + "║")
     print(Fore.CYAN + "║ " + Fore.WHITE + "10. " + Fore.GREEN + "Delete Transaction".ljust(115) + Fore.CYAN + "║")
     print(Fore.CYAN + "║ " + Fore.WHITE + "11. " + Fore.CYAN + "Statistics Dashboard".ljust(115) + Fore.CYAN + "║")
-    print(Fore.CYAN + "║ " + Fore.WHITE + "12. " + Fore.RED + "Exit".ljust(115) + Fore.CYAN + "║")
+    print(Fore.CYAN + "║ " + Fore.WHITE + "12. " + Fore.MAGENTA + "Set Budget".ljust(115) + Fore.CYAN + "║")
+    print(Fore.CYAN + "║ " + Fore.WHITE + "13. " + Fore.MAGENTA + "Check Budget Status".ljust(115) + Fore.CYAN + "║")
+    print(Fore.CYAN + "║ " + Fore.WHITE + "14. " + Fore.RED + "Exit".ljust(115) + Fore.CYAN + "║")
     print(Fore.CYAN + "╠" + "═" * 120 + "╣")
 
 if __name__ == "__main__":
@@ -397,12 +471,24 @@ if __name__ == "__main__":
 
     while True:
         show_menu()
-        choice = input(Fore.CYAN + "║" + Fore.WHITE+ f"  Enter your choice(1-12): ".ljust(120) + Fore.CYAN + "║")
-        if choice == "12":
+        choice = input(Fore.CYAN + "║" + Fore.WHITE+ f"  Enter your choice(1-14): ".ljust(120) + Fore.CYAN + "║")
+        if choice == "14":
             fm.save_to_file("finance_data.json")
             print(Fore.CYAN + "║" + Fore.WHITE+ f"  Goodbye.".ljust(120) + Fore.CYAN + "║")
             print(Fore.CYAN + "╚" + "═" * 120 + "╝")
             break
+
+        elif choice == "13":
+            print(Fore.CYAN + "╠" + "═" * 120 + "╣")
+            print(Fore.CYAN + "║" + Fore.YELLOW + "📊 CHECK BUDGET STATUS".center(118) + Fore.CYAN + " ║")
+            print(Fore.CYAN + "╠" + "═" * 120 + "╣")
+            fm.check_budget_status()
+
+        elif choice == "12":
+            print(Fore.CYAN + "╠" + "═" * 120 + "╣")
+            print(Fore.CYAN + "║" + Fore.YELLOW + "💰 SET BUDGET".center(118) + Fore.CYAN + " ║")
+            print(Fore.CYAN + "╠" + "═" * 120 + "╣")
+            fm.set_budget()
 
         elif choice == "11":
             print(Fore.CYAN + "╠" + "═" * 120 + "╣")
