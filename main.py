@@ -3,6 +3,7 @@ from datetime import date, datetime
 from colorama import init, Fore, Style
 init(autoreset=True)
 import os
+import csv
 #print(Fore.CYAN + "║" + Fore.WHITE+ f"  Enter Text Heres".ljust(120) + Fore.CYAN + "║")
 class Transaction:
     def __init__(self, amount, category, date, description=""):
@@ -91,7 +92,7 @@ class FinanceManager:
         print(Fore.CYAN + "╠" + "═" * 120 + "╣")
         print(Fore.CYAN + "║" + Fore.YELLOW + f"  BUDGET STATUS - {current_month}".center(120) + Fore.CYAN + "║")
         print(Fore.CYAN + "╠" + "═" * 120 + "╣")   
-
+        print(Fore.CYAN + "║" + Fore.WHITE + " " + "-"*118 + Fore.WHITE + " " + Fore.CYAN + "║")
         for category, limit in self.budgets.items():
             # Filter transactions: must match category (case-insensitive) AND be in current month
             spent = sum(t.amount for t in self.transactions if t.category.lower() == category.lower() and t.date[:7] == current_month)
@@ -107,9 +108,11 @@ class FinanceManager:
 
             if spent > limit:
                 print(Fore.CYAN + "║" + Fore.WHITE + f"  ⚠️  Over by Rs.{abs(remaining):.2f}".ljust(120) + Fore.CYAN + "║")
+                print(Fore.CYAN + "║" + Fore.WHITE + " " + "-"*118 + Fore.WHITE + " " + Fore.CYAN + "║")
             else:
                 print(Fore.CYAN + "║" + Fore.WHITE + f"  Remaining: Rs.{remaining:.2f}".ljust(120) + Fore.CYAN + "║")
-            print(Fore.CYAN + "╠" + "═" * 120 + "╣")
+                print(Fore.CYAN + "║" + Fore.WHITE + " " + "-"*118 + Fore.WHITE + " " + Fore.CYAN + "║")
+        print(Fore.CYAN + "╠" + "═" * 120 + "╣")
         
     def add_transaction(self, transaction):
         self.transactions.append(transaction)
@@ -220,17 +223,17 @@ class FinanceManager:
         desc_str = (t.description if t.description else "")[:55].ljust(55)
         return f"{num_str} {date_str} {cat_str} {amt_str} {desc_str}"
     
-    def save_to_file(self, filename):
+    def save_to_file(self):
         data = []
         for transaction in self.transactions:
             data.append(transaction.to_dict())
-        with open(filename, "w", encoding="utf-8") as f:
+        with open(self.filename, "w", encoding="utf-8") as f:
             json.dump(data, f, indent=4)
-        print(Fore.CYAN + "║ " + Fore.GREEN + f" 💾 Data saved to {filename}".ljust(118) + Fore.CYAN + "║")
+        print(Fore.CYAN + "║ " + Fore.GREEN + f" 💾 Data saved to {self.filename}".ljust(118) + Fore.CYAN + "║")
 
-    def load_from_file(self, filename):
+    def load_from_file(self):
         try:
-            with open(filename, "r", encoding="utf-8") as f:
+            with open(self.filename, "r", encoding="utf-8") as f:
                 data = json.load(f)
             
             self.transactions = []
@@ -247,7 +250,7 @@ class FinanceManager:
             if skipped_count > 0:
                 print(Fore.CYAN + "║" + Fore.YELLOW + f"  Warning: Skipped {skipped_count} invalid transactions.".ljust(118) + Fore.CYAN + " ║")
 
-            print(Fore.CYAN + "║" + Fore.WHITE + f"  Loaded {len(self.transactions)} transactions from {filename}".ljust(120) + Fore.CYAN + "║")
+            print(Fore.CYAN + "║" + Fore.WHITE + f"  Loaded {len(self.transactions)} transactions from {self.filename}".ljust(120) + Fore.CYAN + "║")
 
         except FileNotFoundError:
             print(Fore.CYAN + "║" + Fore.WHITE + "  No save file found. Starting fresh.".ljust(120) + Fore.CYAN + "║")
@@ -287,7 +290,7 @@ class FinanceManager:
         print(Fore.CYAN + "║" + Fore.WHITE + " " + "-"*118 + Fore.WHITE + " " + Fore.CYAN + "║")
             
     def _save_data(self):
-        self.save_to_file("finance_data.json")
+        self.save_to_file()
     
     def edit_transaction(self):
         if not self.transactions:
@@ -432,6 +435,32 @@ class FinanceManager:
         print(Fore.CYAN + "║" + Fore.WHITE + f"  Most Expensive Month    : {worst_month} (Rs.{monthly_totals.get(worst_month, 0):.2f})".ljust(120) + Fore.CYAN + "║")
         print(Fore.CYAN + "╠" + "═" * 120 + "╣")
 
+    def export_to_csv(self):
+        if not self.transactions:
+            print(Fore.CYAN + "║" + Fore.RED + "  No transactions to export.".ljust(120) + Fore.CYAN + "║")
+            return
+        
+        # Build a filename with today's date so exports never overwrite
+        today_str = datetime.today().strftime("%Y-%m-%d")
+        filename = f"transactions_{today_str}.csv"
+
+        # 'newline=""' is required for csv.writer on Windows.
+        # Without it, an extra blank line appears between every row.
+        with open(filename, "w", newline="", encoding="utf-8") as f:
+            fieldnames = ["date", "category", "amount", "description"]
+            writer = csv.DictWriter(f, fieldnames=fieldnames)
+
+            # Write the header row: date, category, amount, description
+            writer.writeheader()
+
+            # Convert each Transaction object to a dict and write as a row
+            for t in self.transactions:
+                writer.writerow(t.to_dict())
+        print(Fore.CYAN + "║" + Fore.GREEN + f"  ✔️  Exported {len(self.transactions)} transactions to '{filename}'".ljust(120) + Fore.CYAN + " ║")
+        print(Fore.CYAN + "║" + Fore.WHITE + "  Open this file in Excel or Google Sheets.".ljust(120) + Fore.CYAN + "║")
+
+
+
 def show_splash_screen():
     print(Fore.CYAN + "╔" + "═" * 120 + "╗")
     print(Fore.CYAN + "║ 🏵️" + Fore.YELLOW +  "💰 PERSONAL FINANCE 🏦 MANAGER v4.0 💰".center(112) + Fore.CYAN + "🏵️  ║")
@@ -458,25 +487,36 @@ def show_menu():
     print(Fore.CYAN + "║ " + Fore.WHITE + "11. " + Fore.CYAN + "Statistics Dashboard".ljust(115) + Fore.CYAN + "║")
     print(Fore.CYAN + "║ " + Fore.WHITE + "12. " + Fore.MAGENTA + "Set Budget".ljust(115) + Fore.CYAN + "║")
     print(Fore.CYAN + "║ " + Fore.WHITE + "13. " + Fore.MAGENTA + "Check Budget Status".ljust(115) + Fore.CYAN + "║")
-    print(Fore.CYAN + "║ " + Fore.WHITE + "14. " + Fore.RED + "Exit".ljust(115) + Fore.CYAN + "║")
+    print(Fore.CYAN + "║ " + Fore.WHITE + "14. " + Fore.CYAN + "Export to CSV".ljust(115) + Fore.CYAN + "║")
+    print(Fore.CYAN + "║ " + Fore.WHITE + "15. " + Fore.RED + "Exit".ljust(115) + Fore.CYAN + "║")
     print(Fore.CYAN + "╠" + "═" * 120 + "╣")
 
 if __name__ == "__main__":
     show_splash_screen()
     fm = FinanceManager()
-    fm.load_from_file("finance_data.json")
+    fm.load_from_file()
     print(fm)
     print(Fore.CYAN + "╠" + "═" * 120 + "╣")
     print(Fore.CYAN + "║ " + Fore.LIGHTBLUE_EX + "💠 WELCOME TO RGUKT-IIIT 🦅 BANK NUZVID-BRANCH 💠".center(116) + Fore.CYAN + "║")
 
     while True:
         show_menu()
-        choice = input(Fore.CYAN + "║" + Fore.WHITE+ f"  Enter your choice(1-14): ".ljust(120) + Fore.CYAN + "║")
-        if choice == "14":
-            fm.save_to_file("finance_data.json")
-            print(Fore.CYAN + "║" + Fore.WHITE+ f"  Goodbye.".ljust(120) + Fore.CYAN + "║")
+        choice = input(Fore.CYAN + "║" + Fore.WHITE+ f"  Enter your choice(1-15): ".ljust(120) + Fore.CYAN + "║")
+        if choice == "15":
+            fm.save_to_file()
+            print(Fore.CYAN + "╠" + "═" * 120 + "╣")
+            print(Fore.CYAN + "║" + Fore.YELLOW + "🙏 THANK YOU FOR USING RGUKT-IIIT BANK".center(118) + Fore.CYAN + " ║")
+            print(Fore.CYAN + "║" + Fore.WHITE + "Your finances are safe with us. Have a great day!".center(120) + Fore.CYAN + "║")
+            print(Fore.CYAN + "╠" + "═" * 120 + "╣")
+            print(Fore.CYAN + "║" + Fore.GREEN + "💻 Developed by Guvvala Venkata Narayana | RGUKT Nuzvid".center(118) + Fore.CYAN + " ║")
             print(Fore.CYAN + "╚" + "═" * 120 + "╝")
             break
+
+        elif choice == "14":
+            print(Fore.CYAN + "╠" + "═" * 120 + "╣")
+            print(Fore.CYAN + "║" + Fore.YELLOW + "📤 EXPORT TO CSV".center(118) + Fore.CYAN + " ║")
+            print(Fore.CYAN + "╠" + "═" * 120 + "╣")
+            fm.export_to_csv()
 
         elif choice == "13":
             print(Fore.CYAN + "╠" + "═" * 120 + "╣")
@@ -525,7 +565,7 @@ if __name__ == "__main__":
             print(Fore.CYAN + "╠" + "═" * 120 + "╣")
             print(Fore.CYAN + "║" + Fore.YELLOW + "SAVE TO FILE".center(120) + Fore.CYAN + "║")
             print(Fore.CYAN + "╠" + "═" * 120 + "╣")
-            fm.save_to_file("finance_data.json")
+            fm.save_to_file()
             print(Fore.CYAN + "║" + Fore.WHITE+ f"  THANK YOU FOR CHOOSINNG RUKT-NUZVID SECURE BANK.".ljust(120) + Fore.CYAN + "║")
             
         elif choice == "6":
