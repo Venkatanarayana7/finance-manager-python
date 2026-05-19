@@ -59,7 +59,7 @@ class FinanceManager:
 
     def search_by_category(self):
         if not self.transactions:
-            print(Fore.CYAN + "║" + Fore.RED + "  No transactions to search.".ljust(118) + Fore.CYAN + " ║")
+            print(Fore.CYAN + "║" + Fore.RED + "  No transactions to search.".ljust(120) + Fore.CYAN + "║")
             return
         
         search_term = input(Fore.CYAN + "║" + Fore.WHITE + "  Enter category to search: ".ljust(120) + Fore.CYAN + "║").strip()
@@ -89,7 +89,7 @@ class FinanceManager:
 
     def search_by_date_range(self):
         if not self.transactions:
-            print(Fore.CYAN + "║" + Fore.RED + "  No transactions to search.".ljust(118) + Fore.CYAN + " ║")
+            print(Fore.CYAN + "║" + Fore.RED + "  No transactions to search.".ljust(120) + Fore.CYAN + "║")
             return
 
         # Get start date with validation loop
@@ -148,15 +148,14 @@ class FinanceManager:
         desc_str = (t.description if t.description else "")[:55].ljust(55)
         return f"{num_str} {date_str} {cat_str} {amt_str} {desc_str}"
     
-
     def save_to_file(self, filename):
-        data  = []
+        data = []
         for transaction in self.transactions:
             data.append(transaction.to_dict())
-
         with open(filename, "w", encoding="utf-8") as f:
             json.dump(data, f, indent=4)
-        print(Fore.CYAN + "║ " + Fore.GREEN + " 💾 Data saved to transactions.json".ljust(118) + Fore.CYAN + "║")
+        print(Fore.CYAN + "║ " + Fore.GREEN + f" 💾 Data saved to {filename}".ljust(118) + Fore.CYAN + "║")
+
     def load_from_file(self, filename):
         try:
             with open(filename, "r", encoding="utf-8") as f:
@@ -169,20 +168,20 @@ class FinanceManager:
                 try:
                     transaction = Transaction.from_dict(item)
                     self.transactions.append(transaction)
-                except( ValueError, KeyError, TypeError) as e:
+                except (ValueError, KeyError, TypeError):
                     skipped_count += 1
                     continue
             
             if skipped_count > 0:
-                print(Fore.CYAN + "║" + Fore.WHITE+ f"  Warning: Skipped {skipped_count} invalid transactions from old format".ljust(120) + Fore.CYAN + "║")
+                print(Fore.CYAN + "║" + Fore.YELLOW + f"  Warning: Skipped {skipped_count} invalid transactions.".ljust(118) + Fore.CYAN + " ║")
 
-            print(Fore.CYAN + "║" + Fore.WHITE+ f"  Loaded {len(self.transactions)} transactions from {filename}".ljust(120) + Fore.CYAN + "║")
+            print(Fore.CYAN + "║" + Fore.WHITE + f"  Loaded {len(self.transactions)} transactions from {filename}".ljust(120) + Fore.CYAN + "║")
 
         except FileNotFoundError:
-            print(Fore.CYAN + "║" + Fore.WHITE+ f"  No save file found. Starting fresh.".ljust(120) + Fore.CYAN + "║")
+            print(Fore.CYAN + "║" + Fore.WHITE + "  No save file found. Starting fresh.".ljust(120) + Fore.CYAN + "║")
             self.transactions = []
         except json.JSONDecodeError:
-            print(Fore.CYAN + "║" + Fore.WHITE+ f"  Save file corrupted. Starting fresh".ljust(120) + Fore.CYAN + "║")
+            print(Fore.CYAN + "║" + Fore.RED + "  Save file corrupted. Starting fresh.".ljust(118) + Fore.CYAN + " ║")
             self.transactions = []
 
     def monthly_summary(self, year_month):
@@ -216,17 +215,17 @@ class FinanceManager:
         print(Fore.CYAN + "║" + Fore.WHITE + " " + "-"*118 + Fore.WHITE + " " + Fore.CYAN + "║")
             
     def _save_data(self):
-        self.save_to_file("transactions.json")
+        self.save_to_file("finance_data.json")
     
     def edit_transaction(self):
         if not self.transactions:
-            print(Fore.CYAN + "║" + Fore.WHITE+ "No transactions to edit.".ljust(120) + Fore.CYAN + "║")
+            print(Fore.CYAN + "║" + Fore.RED + "  No transactions to edit.".ljust(120) + Fore.CYAN + "║")
             return
         
         self.list_all()
         print(Fore.CYAN + "║" + Fore.WHITE + f"  Enter a number between 1 and {len(self.transactions)}".ljust(120) + Fore.CYAN + "║")
         try:
-            number = int(input(Fore.CYAN + "║" + Fore.WHITE+ "Enter the transaction number to edit: ".ljust(120) + Fore.CYAN + "║"))
+            number = int(input(Fore.CYAN + "║" + Fore.WHITE+ "  Enter the transaction number to edit: ".ljust(120) + Fore.CYAN + "║"))
             index = number -1  # user sees 1-based, Python needs 0-based
         except ValueError:
             print(Fore.CYAN + "║" + Fore.WHITE+ "Please enter a valid number.".ljust(120) + Fore.CYAN + "║")
@@ -241,33 +240,33 @@ class FinanceManager:
         # inside self.transactions. Any change you make to t.amount will
         # automatically appear in self.transactions[index].amount as well.
 
-        print(Fore.CYAN + "║" + Fore.WHITE+ f"Current values:".ljust(120) + Fore.CYAN + "║")
-        print(Fore.CYAN + "║" + Fore.WHITE+ f"  Amount     : Rs.{t.amount:.2f}".ljust(120) + Fore.CYAN + "║")
-        print(Fore.CYAN + "║" + Fore.WHITE+ f"  Category   : {t.category}".ljust(120) + Fore.CYAN + "║")
-        print(Fore.CYAN + "║" + Fore.WHITE+ f"  Description: {t.description}".ljust(120) + Fore.CYAN + "║")
+        print(Fore.CYAN + "║" + Fore.WHITE+ f"  Current values:".ljust(120) + Fore.CYAN + "║")
+        print(Fore.CYAN + "║" + Fore.WHITE+ f"    Amount     : Rs.{t.amount:.2f}".ljust(120) + Fore.CYAN + "║")
+        print(Fore.CYAN + "║" + Fore.WHITE+ f"    Category   : {t.category}".ljust(120) + Fore.CYAN + "║")
+        print(Fore.CYAN + "║" + Fore.WHITE+ f"    Description: {t.description}".ljust(120) + Fore.CYAN + "║")
 
-        print(Fore.CYAN + "║" + Fore.WHITE+ f"What do you want to change?".ljust(120) + Fore.CYAN + "║")
-        print(Fore.CYAN + "║" + Fore.WHITE+ f"  1. Amount".ljust(120) + Fore.CYAN + "║")
-        print(Fore.CYAN + "║" + Fore.WHITE+ f"  2. Category".ljust(120) + Fore.CYAN + "║")
-        print(Fore.CYAN + "║" + Fore.WHITE+ f"  3. Description".ljust(120) + Fore.CYAN + "║")
+        print(Fore.CYAN + "║" + Fore.WHITE+ f"  What do you want to change?".ljust(120) + Fore.CYAN + "║")
+        print(Fore.CYAN + "║" + Fore.WHITE+ f"    1. Amount".ljust(120) + Fore.CYAN + "║")
+        print(Fore.CYAN + "║" + Fore.WHITE+ f"    2. Category".ljust(120) + Fore.CYAN + "║")
+        print(Fore.CYAN + "║" + Fore.WHITE+ f"    3. Description".ljust(120) + Fore.CYAN + "║")
 
-        field = input(Fore.CYAN + "║" + Fore.WHITE+ "Enter choice (1/2/3): ".strip().ljust(120) + Fore.CYAN + "║")
+        field = input(Fore.CYAN + "║" + Fore.WHITE+ "  Enter choice (1/2/3): ".ljust(120) + Fore.CYAN + "║").strip()
     
         if field == "1":
             try:
-                new_amount = float(input(Fore.CYAN + "║" + Fore.WHITE+ "Enter new amount: ".ljust(120) + Fore.CYAN + "║"))
+                new_amount = float(input(Fore.CYAN + "║" + Fore.WHITE+ "  Enter new amount: ".ljust(120) + Fore.CYAN + "║"))
                 t.amount = new_amount
             except ValueError:
                 print(Fore.CYAN + "║" + Fore.RED + "  ❌ Invalid amount. No changes made.".ljust(118) + Fore.CYAN + " ║")
                 return
         elif field == "2":
-            new_category = input(Fore.CYAN + "║" + Fore.WHITE+ "Enter new category: ".strip().ljust(120) + Fore.CYAN + "║")
+            new_category = input(Fore.CYAN + "║" + Fore.WHITE+ "  Enter new category: ".strip().ljust(120) + Fore.CYAN + "║")
             if not new_category:
                 print(Fore.CYAN + "║" + Fore.RED + "  ❌ Category cannot be empty. No changes made.".ljust(118) + Fore.CYAN + " ║")
                 return
             t.category = new_category
         elif field == "3":
-            new_desc = input(Fore.CYAN + "║" + Fore.WHITE+ "Enter new description (press Enter to clear): ".strip().ljust(120) + Fore.CYAN + "║")
+            new_desc = input(Fore.CYAN + "║" + Fore.WHITE+ "  Enter new description (press Enter to clear): ".strip().ljust(120) + Fore.CYAN + "║")
             t.description = new_desc
 
         else:
@@ -279,7 +278,7 @@ class FinanceManager:
 
     def delete_transaction(self):
         if not self.transactions:
-            print(Fore.CYAN + "║" + Fore.RED + " No transactions to delete.".ljust(118) + Fore.CYAN + " ║")
+            print(Fore.CYAN + "║" + Fore.RED + " No transactions to delete.".ljust(120) + Fore.CYAN + " ║")
             return 
         
         self.list_all()  # Show numberedlist so user can choose
@@ -310,6 +309,57 @@ class FinanceManager:
         else:
             print(Fore.CYAN + "║" + Fore.WHITE + "  Deletion cancelled. No changes made.".ljust(120) + Fore.CYAN + "║")
 
+    def show_statistics(self):
+        if not self.transactions:
+            print(Fore.CYAN + "║" + Fore.RED + "  No data available for statistics.".ljust(120) + Fore.CYAN + "║")
+            return
+
+        count  = len(self.transactions)
+        total = sum(t.amount for t in self.transactions) # generator expression
+        average = total / count
+
+        # Largest and smallest transactions (by amount)
+        biggest = max(self.transactions, key=lambda t: t.amount)
+        smallest = min(self.transactions, key=lambda t: t.amount)
+
+        # Count how many times each category appears
+        category_counts = {}
+        for t in self.transactions:
+            category_counts[t.category] = category_counts.get(t.category, 0) + 1
+        most_used_category = max(category_counts, key=category_counts.get)
+
+        # Total amount per category (to find highest-spending category)
+        category_totals = {}
+        for t in self.transactions: 
+            category_totals[t.category] = category_totals.get(t.category, 0) + t.amount
+
+        highest_spending_category = (max(category_totals, key=category_totals.get))
+
+        # Monthly totals to find most expensive month
+        monthly_totals = {}
+        for t in self.transactions:
+            month = t.date[:7] # "YYYY-MM"
+            monthly_totals[month] = monthly_totals.get(month, 0) + t.amount
+
+        if monthly_totals:
+            worst_month = max(monthly_totals, key=monthly_totals.get)
+        else:
+            worst_month = "N/A"
+
+        # Display everything in our beautiful bordered style
+    
+        print(Fore.CYAN + "║" + Fore.WHITE + f"  Total Transactions      : {count}".ljust(120) + Fore.CYAN + "║")
+        print(Fore.CYAN + "║" + Fore.WHITE + f"  Total Amount Spent      : Rs.{total:.2f}".ljust(120) + Fore.CYAN + "║")
+        print(Fore.CYAN + "║" + Fore.WHITE + f"  Average Per Transaction : Rs.{average:.2f}".ljust(120) + Fore.CYAN + "║")
+        print(Fore.CYAN + "║" + Fore.WHITE + " " + "-"*118 + Fore.WHITE + " " + Fore.CYAN + "║")
+        print(Fore.CYAN + "║" + Fore.WHITE + f"  Largest Expense         : Rs.{biggest.amount:.2f} ({biggest.category})".ljust(120) + Fore.CYAN + "║")
+        print(Fore.CYAN + "║" + Fore.WHITE + f"  Smallest Expense        : Rs.{smallest.amount:.2f} ({smallest.category})".ljust(120) + Fore.CYAN + "║")
+        print(Fore.CYAN + "║" + Fore.WHITE + " " + "-"*118 + Fore.WHITE + " " + Fore.CYAN + "║")
+        print(Fore.CYAN + "║" + Fore.WHITE + f"  Most Used Category      : {most_used_category} ({category_counts[most_used_category]} times)".ljust(120) + Fore.CYAN + "║")
+        print(Fore.CYAN + "║" + Fore.WHITE + f"  Highest Spending Cat.   : {highest_spending_category} (Rs.{category_totals[highest_spending_category]:.2f})".ljust(120) + Fore.CYAN + "║")
+        print(Fore.CYAN + "║" + Fore.WHITE + f"  Most Expensive Month    : {worst_month} (Rs.{monthly_totals.get(worst_month, 0):.2f})".ljust(120) + Fore.CYAN + "║")
+        print(Fore.CYAN + "╠" + "═" * 120 + "╣")
+
 def show_splash_screen():
     print(Fore.CYAN + "╔" + "═" * 120 + "╗")
     print(Fore.CYAN + "║ 🏵️" + Fore.YELLOW +  "💰 PERSONAL FINANCE 🏦 MANAGER v3.0 💰".center(112) + Fore.CYAN + "🏵️  ║")
@@ -333,26 +383,33 @@ def show_menu():
     print(Fore.CYAN + "║ " + Fore.WHITE + " 8. " + Fore.GREEN + "Monthly Summary".ljust(115) + Fore.CYAN + "║")
     print(Fore.CYAN + "║ " + Fore.WHITE + " 9. " + Fore.GREEN + "Edit Transaction".ljust(115) + Fore.CYAN + "║")
     print(Fore.CYAN + "║ " + Fore.WHITE + "10. " + Fore.GREEN + "Delete Transaction".ljust(115) + Fore.CYAN + "║")
-    print(Fore.CYAN + "║ " + Fore.WHITE + "11. " + Fore.RED + "Exit".ljust(115) + Fore.CYAN + "║")
+    print(Fore.CYAN + "║ " + Fore.WHITE + "11. " + Fore.CYAN + "Statistics Dashboard".ljust(115) + Fore.CYAN + "║")
+    print(Fore.CYAN + "║ " + Fore.WHITE + "12. " + Fore.RED + "Exit".ljust(115) + Fore.CYAN + "║")
     print(Fore.CYAN + "╠" + "═" * 120 + "╣")
 
 if __name__ == "__main__":
     show_splash_screen()
     fm = FinanceManager()
-    fm.load_from_file("transactions.json")
+    fm.load_from_file("finance_data.json")
     print(fm)
     print(Fore.CYAN + "╠" + "═" * 120 + "╣")
     print(Fore.CYAN + "║ " + Fore.LIGHTBLUE_EX + "💠 WELCOME TO RGUKT-IIIT 🦅 BANK NUZVID-BRANCH 💠".center(116) + Fore.CYAN + "║")
 
     while True:
         show_menu()
-        choice = input(Fore.CYAN + "║" + Fore.WHITE+ f"  Enter your choice(1-11): ".ljust(120) + Fore.CYAN + "║")
-        if choice == "11":
-            fm.save_to_file("transactions.json")
+        choice = input(Fore.CYAN + "║" + Fore.WHITE+ f"  Enter your choice(1-12): ".ljust(120) + Fore.CYAN + "║")
+        if choice == "12":
+            fm.save_to_file("finance_data.json")
             print(Fore.CYAN + "║" + Fore.WHITE+ f"  Goodbye.".ljust(120) + Fore.CYAN + "║")
             print(Fore.CYAN + "╚" + "═" * 120 + "╝")
             break
-        
+
+        elif choice == "11":
+            print(Fore.CYAN + "╠" + "═" * 120 + "╣")
+            print(Fore.CYAN + "║" + Fore.YELLOW + "📊 STATISTICS DASHBOARD".center(118) + Fore.CYAN + " ║")
+            print(Fore.CYAN + "╠" + "═" * 120 + "╣")
+            fm.show_statistics()
+
         elif choice == "10":
             print(Fore.CYAN + "╠" + "═" * 120 + "╣")
             print(Fore.CYAN + "║" + Fore.YELLOW + "DELETE TRANSACTION".center(120) + Fore.CYAN + "║")
@@ -382,7 +439,7 @@ if __name__ == "__main__":
             print(Fore.CYAN + "╠" + "═" * 120 + "╣")
             print(Fore.CYAN + "║" + Fore.YELLOW + "SAVE TO FILE".center(120) + Fore.CYAN + "║")
             print(Fore.CYAN + "╠" + "═" * 120 + "╣")
-            fm.save_to_file("transactions.json")
+            fm.save_to_file("finance_data.json")
             print(Fore.CYAN + "║" + Fore.WHITE+ f"  THANK YOU FOR CHOOSINNG RUKT-NUZVID SECURE BANK.".ljust(120) + Fore.CYAN + "║")
             
         elif choice == "6":
