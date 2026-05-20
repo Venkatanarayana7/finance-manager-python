@@ -124,6 +124,8 @@ FinanceManager
 **Lambda Functions for Sorting.**: The Statistics Dashboard uses `max(self.transactions, key=lambda t: t.amount)` to find the transaction with the highest amount. The `lambda t: t.amount` tells Python what attribute to compare when evaluating "largest" without this, Python would not know how to compare two Transaction objects.
 
 **Input Validation Pattern.**: Every user input that requires a number uses a `while True:` loop with `try/except ValueError`, breaking only when valid input is received. Every string input that must be non-empty is checked with an `if not value:` guard. The program never crashes from user input.
+
+
 ---
 
 ## 📝 Version History
