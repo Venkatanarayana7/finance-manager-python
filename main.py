@@ -102,9 +102,16 @@ class FinanceManager:
             status_color = Fore.GREEN if spent <= limit else Fore.RED
             status_text = "OK" if spent <= limit else "OVER BUDGET"
 
-            print(Fore.CYAN + "║" + Fore.WHITE + f"  {category}:".ljust(40) + 
-                  f"  Budget: Rs.{limit:>10.2f}  |  Spent: Rs.{spent:>10.2f} ({percentage:5.1f}%)  |  " +
-                    status_color + f"{status_text}".ljust(17) + Fore.CYAN + " ║")
+            # Build the perfectly aligned status line
+            line = (
+                f"  {category}:".ljust(30) + " " +
+                f"Budget: Rs.{limit:>10.2f}".ljust(22) + "  |  " +
+                f"Spent: Rs.{spent:>10.2f}".ljust(22) + " " +
+                f"({percentage:.1f}%)".ljust(15) + "  |  " +
+                status_color + f"{status_text}".ljust(18)
+            )
+
+            print(Fore.CYAN + "║" + Fore.WHITE + line + Fore.CYAN + " ║")
 
             if spent > limit:
                 print(Fore.CYAN + "║" + Fore.WHITE + f"  ⚠️  Over by Rs.{abs(remaining):.2f}".ljust(120) + Fore.CYAN + "║")
@@ -303,11 +310,11 @@ class FinanceManager:
             number = int(input(Fore.CYAN + "║" + Fore.WHITE+ "  Enter the transaction number to edit: ".ljust(120) + Fore.CYAN + "║"))
             index = number -1  # user sees 1-based, Python needs 0-based
         except ValueError:
-            print(Fore.CYAN + "║" + Fore.WHITE+ "Please enter a valid number.".ljust(120) + Fore.CYAN + "║")
+            print(Fore.CYAN + "║" + Fore.WHITE+ " Please enter a valid number.".ljust(120) + Fore.CYAN + "║")
             return
  
         if index < 0 or index >= len(self.transactions):
-            print(Fore.CYAN + "║" + Fore.WHITE+ "Please choose transaction within the transactions.".ljust(120) + Fore.CYAN + " ║")
+            print(Fore.CYAN + "║" + Fore.WHITE+ " Please choose transaction within the transactions.".ljust(120) + Fore.CYAN + "║")
             return
 
         t = self.transactions[index]
@@ -353,7 +360,7 @@ class FinanceManager:
 
     def delete_transaction(self):
         if not self.transactions:
-            print(Fore.CYAN + "║" + Fore.RED + " No transactions to delete.".ljust(120) + Fore.CYAN + " ║")
+            print(Fore.CYAN + "║" + Fore.RED + " No transactions to delete.".ljust(120) + Fore.CYAN + "║")
             return 
         
         self.list_all()  # Show numberedlist so user can choose
@@ -423,16 +430,16 @@ class FinanceManager:
 
         # Display everything in our beautiful bordered style
     
-        print(Fore.CYAN + "║" + Fore.WHITE + f"  Total Transactions      : {count}".ljust(120) + Fore.CYAN + "║")
-        print(Fore.CYAN + "║" + Fore.WHITE + f"  Total Amount Spent      : Rs.{total:.2f}".ljust(120) + Fore.CYAN + "║")
-        print(Fore.CYAN + "║" + Fore.WHITE + f"  Average Per Transaction : Rs.{average:.2f}".ljust(120) + Fore.CYAN + "║")
-        print(Fore.CYAN + "║" + Fore.WHITE + " " + "-"*118 + Fore.WHITE + " " + Fore.CYAN + "║")
-        print(Fore.CYAN + "║" + Fore.WHITE + f"  Largest Expense         : Rs.{biggest.amount:.2f} ({biggest.category})".ljust(120) + Fore.CYAN + "║")
+        print(Fore.CYAN + "║" + Fore.WHITE + f"  Total Transactions      : {count}".ljust(120)                                        + Fore.CYAN + "║")
+        print(Fore.CYAN + "║" + Fore.WHITE + f"  Total Amount Spent      : Rs.{total:.2f}".ljust(120)                                 + Fore.CYAN + "║")
+        print(Fore.CYAN + "║" + Fore.WHITE + f"  Average Per Transaction : Rs.{average:.2f}".ljust(120)                               + Fore.CYAN + "║")
+        print(Fore.CYAN + "║" + Fore.WHITE + " " + "-"*118 + Fore.WHITE + " "                                                         + Fore.CYAN + "║")
+        print(Fore.CYAN + "║" + Fore.WHITE + f"  Largest Expense         : Rs.{biggest.amount:.2f} ({biggest.category})".ljust(120)   + Fore.CYAN + "║")
         print(Fore.CYAN + "║" + Fore.WHITE + f"  Smallest Expense        : Rs.{smallest.amount:.2f} ({smallest.category})".ljust(120) + Fore.CYAN + "║")
         print(Fore.CYAN + "║" + Fore.WHITE + " " + "-"*118 + Fore.WHITE + " " + Fore.CYAN + "║")
-        print(Fore.CYAN + "║" + Fore.WHITE + f"  Most Used Category      : {most_used_category} ({category_counts[most_used_category]} times)".ljust(120) + Fore.CYAN + "║")
+        print(Fore.CYAN + "║" + Fore.WHITE + f"  Most Used Category      : {most_used_category} ({category_counts[most_used_category]} times)".ljust(120)                + Fore.CYAN + "║")
         print(Fore.CYAN + "║" + Fore.WHITE + f"  Highest Spending Cat.   : {highest_spending_category} (Rs.{category_totals[highest_spending_category]:.2f})".ljust(120) + Fore.CYAN + "║")
-        print(Fore.CYAN + "║" + Fore.WHITE + f"  Most Expensive Month    : {worst_month} (Rs.{monthly_totals.get(worst_month, 0):.2f})".ljust(120) + Fore.CYAN + "║")
+        print(Fore.CYAN + "║" + Fore.WHITE + f"  Most Expensive Month    : {worst_month} (Rs.{monthly_totals.get(worst_month, 0):.2f})".ljust(120)                       + Fore.CYAN + "║")
         print(Fore.CYAN + "╠" + "═" * 120 + "╣")
 
     def export_to_csv(self):
@@ -466,29 +473,29 @@ def show_splash_screen():
     print(Fore.CYAN + "║ 🏵️" + Fore.YELLOW +  "💰 PERSONAL FINANCE 🏦 MANAGER v4.0 💰".center(112) + Fore.CYAN + "🏵️  ║")
     print(Fore.CYAN + "╠" + "═" * 120 + "╣")
     print(Fore.CYAN + "║" + Fore.WHITE + "💻 DEVELOPED BY: GUVVALA VENKATA NARAYANA 💻".center(118) + Fore.CYAN + "║")
-    print(Fore.CYAN + "║" + Fore.GREEN + "🏫 RGUKT NUZVID | B-TECH N24~CS30 🏫".center(118) + Fore.CYAN + "║")
-    print(Fore.CYAN + "║" + Fore.MAGENTA +  "🅖 uaranteed 🅥 ault 🅝 ational 🅑 ank".center(120) + Fore.CYAN + "║")
+    print(Fore.CYAN + "║" + Fore.GREEN + "🏫 RGUKT NUZVID | B-TECH N24~BATCH 🏫".center(118) + Fore.CYAN + "║")
+    print(Fore.CYAN + "║ 🔷" + Fore.MAGENTA +  "🅖 uaranteed 🅥 ault 🅝 ational 🅑 ank".center(114) + Fore.CYAN + "🔷 ║")
     print(Fore.CYAN + "╠" + "═" * 120 + "╣")
 
 def show_menu():
     print(Fore.CYAN + "╠" + "═" * 120 + "╣")
     print(Fore.CYAN + "║ " + Fore.YELLOW + "🌼 MAIN MENU 🌼".center(117) + Fore.CYAN + "║")
     print(Fore.CYAN + "╠" + "═" * 120 + "╣")
-    print(Fore.CYAN + "║ " + Fore.WHITE + " 1. " + Fore.GREEN + "Add Income".ljust(115) + Fore.CYAN + "║")
-    print(Fore.CYAN + "║ " + Fore.WHITE + " 2. " + Fore.RED + "Add Expense".ljust(115) + Fore.CYAN + "║")
-    print(Fore.CYAN + "║ " + Fore.WHITE + " 3. " + Fore.BLUE + "View Balance".ljust(115) + Fore.CYAN + "║")
-    print(Fore.CYAN + "║ " + Fore.WHITE + " 4. " + Fore.MAGENTA + "View All Transactions".ljust(115) + Fore.CYAN + "║")
-    print(Fore.CYAN + "║ " + Fore.WHITE + " 5. " + Fore.YELLOW + "Search by Category".ljust(115) + Fore.CYAN + "║")
-    print(Fore.CYAN + "║ " + Fore.WHITE + " 6. " + Fore.YELLOW + "Search by Date Range".ljust(115) + Fore.CYAN + "║")
-    print(Fore.CYAN + "║ " + Fore.WHITE + " 7. " + Fore.GREEN + "Save to File".ljust(115) + Fore.CYAN + "║")
-    print(Fore.CYAN + "║ " + Fore.WHITE + " 8. " + Fore.GREEN + "Monthly Summary".ljust(115) + Fore.CYAN + "║")
-    print(Fore.CYAN + "║ " + Fore.WHITE + " 9. " + Fore.GREEN + "Edit Transaction".ljust(115) + Fore.CYAN + "║")
-    print(Fore.CYAN + "║ " + Fore.WHITE + "10. " + Fore.GREEN + "Delete Transaction".ljust(115) + Fore.CYAN + "║")
-    print(Fore.CYAN + "║ " + Fore.WHITE + "11. " + Fore.CYAN + "Statistics Dashboard".ljust(115) + Fore.CYAN + "║")
-    print(Fore.CYAN + "║ " + Fore.WHITE + "12. " + Fore.MAGENTA + "Set Budget".ljust(115) + Fore.CYAN + "║")
-    print(Fore.CYAN + "║ " + Fore.WHITE + "13. " + Fore.MAGENTA + "Check Budget Status".ljust(115) + Fore.CYAN + "║")
-    print(Fore.CYAN + "║ " + Fore.WHITE + "14. " + Fore.CYAN + "Export to CSV".ljust(115) + Fore.CYAN + "║")
-    print(Fore.CYAN + "║ " + Fore.WHITE + "15. " + Fore.RED + "Exit".ljust(115) + Fore.CYAN + "║")
+    print(Fore.CYAN + "║ " + Fore.WHITE + " 1. " + Fore.GREEN           + "Add Income".ljust(115)            + Fore.CYAN + "║")
+    print(Fore.CYAN + "║ " + Fore.WHITE + " 2. " + Fore.RED             + "Add Expense".ljust(115)           + Fore.CYAN + "║")
+    print(Fore.CYAN + "║ " + Fore.WHITE + " 3. " + Fore.LIGHTCYAN_EX    + "View Balance".ljust(115)          + Fore.CYAN + "║")
+    print(Fore.CYAN + "║ " + Fore.WHITE + " 4. " + Fore.WHITE           + "View All Transactions".ljust(115) + Fore.CYAN + "║")
+    print(Fore.CYAN + "║ " + Fore.WHITE + " 5. " + Fore.YELLOW          + "Search by Category".ljust(115)    + Fore.CYAN + "║")
+    print(Fore.CYAN + "║ " + Fore.WHITE + " 6. " + Fore.YELLOW          + "Search by Date Range".ljust(115)  + Fore.CYAN + "║")
+    print(Fore.CYAN + "║ " + Fore.WHITE + " 7. " + Fore.LIGHTYELLOW_EX  + "Save to File".ljust(115)          + Fore.CYAN + "║")
+    print(Fore.CYAN + "║ " + Fore.WHITE + " 8. " + Fore.LIGHTCYAN_EX    + "Monthly Summary".ljust(115)       + Fore.CYAN + "║")
+    print(Fore.CYAN + "║ " + Fore.WHITE + " 9. " + Fore.LIGHTBLUE_EX    + "Edit Transaction".ljust(115)      + Fore.CYAN + "║")
+    print(Fore.CYAN + "║ " + Fore.WHITE + "10. " + Fore.MAGENTA         + "Delete Transaction".ljust(115)    + Fore.CYAN + "║")
+    print(Fore.CYAN + "║ " + Fore.WHITE + "11. " + Fore.LIGHTMAGENTA_EX + "Statistics Dashboard".ljust(115)  + Fore.CYAN + "║")
+    print(Fore.CYAN + "║ " + Fore.WHITE + "12. " + Fore.LIGHTYELLOW_EX  + "Set Budget".ljust(115)            + Fore.CYAN + "║")
+    print(Fore.CYAN + "║ " + Fore.WHITE + "13. " + Fore.LIGHTYELLOW_EX  + "Check Budget Status".ljust(115)   + Fore.CYAN + "║")
+    print(Fore.CYAN + "║ " + Fore.WHITE + "14. " + Fore.LIGHTGREEN_EX   + "Export to CSV".ljust(115)         + Fore.CYAN + "║")
+    print(Fore.CYAN + "║ " + Fore.WHITE + "15. " + Fore.RED             + "Exit".ljust(115)                  + Fore.CYAN + "║")
     print(Fore.CYAN + "╠" + "═" * 120 + "╣")
 
 if __name__ == "__main__":
@@ -505,52 +512,52 @@ if __name__ == "__main__":
         if choice == "15":
             fm.save_to_file()
             print(Fore.CYAN + "╠" + "═" * 120 + "╣")
-            print(Fore.CYAN + "║" + Fore.YELLOW + "🙏 THANK YOU FOR USING RGUKT-IIIT BANK".center(118) + Fore.CYAN + " ║")
-            print(Fore.CYAN + "║" + Fore.WHITE + "Your finances are safe with us. Have a great day!".center(120) + Fore.CYAN + "║")
+            print(Fore.CYAN + "║" + Fore.YELLOW + "🙏 THANK YOU FOR USING RGUKT-IIIT BANK 🙏".center(118) + Fore.CYAN + "║")
+            print(Fore.CYAN + "║" + Fore.WHITE + "🪪  Your finances are safe with us. Have a great day! 🪪".center(120) + Fore.CYAN + "║")
             print(Fore.CYAN + "╠" + "═" * 120 + "╣")
-            print(Fore.CYAN + "║" + Fore.GREEN + "💻 Developed by Guvvala Venkata Narayana | RGUKT Nuzvid".center(118) + Fore.CYAN + " ║")
+            print(Fore.CYAN + "║" + Fore.GREEN + "💻 Developed by Guvvala Venkata Narayana | RGUKT Nuzvid 💻".center(118) + Fore.CYAN + "║")
             print(Fore.CYAN + "╚" + "═" * 120 + "╝")
             break
 
         elif choice == "14":
             print(Fore.CYAN + "╠" + "═" * 120 + "╣")
-            print(Fore.CYAN + "║" + Fore.YELLOW + "📤 EXPORT TO CSV".center(118) + Fore.CYAN + " ║")
+            print(Fore.CYAN + "║" + Fore.YELLOW + "📤 EXPORT TO CSV 📤".center(118) + Fore.CYAN + "║")
             print(Fore.CYAN + "╠" + "═" * 120 + "╣")
             fm.export_to_csv()
 
         elif choice == "13":
             print(Fore.CYAN + "╠" + "═" * 120 + "╣")
-            print(Fore.CYAN + "║" + Fore.YELLOW + "📊 CHECK BUDGET STATUS".center(118) + Fore.CYAN + " ║")
+            print(Fore.CYAN + "║" + Fore.YELLOW + "📊 CHECK BUDGET STATUS 📊".center(118) + Fore.CYAN + "║")
             print(Fore.CYAN + "╠" + "═" * 120 + "╣")
             fm.check_budget_status()
 
         elif choice == "12":
             print(Fore.CYAN + "╠" + "═" * 120 + "╣")
-            print(Fore.CYAN + "║" + Fore.YELLOW + "💰 SET BUDGET".center(118) + Fore.CYAN + " ║")
+            print(Fore.CYAN + "║" + Fore.YELLOW + "💰 SET BUDGET 💰".center(118) + Fore.CYAN + "║")
             print(Fore.CYAN + "╠" + "═" * 120 + "╣")
             fm.set_budget()
 
         elif choice == "11":
             print(Fore.CYAN + "╠" + "═" * 120 + "╣")
-            print(Fore.CYAN + "║" + Fore.YELLOW + "📊 STATISTICS DASHBOARD".center(118) + Fore.CYAN + " ║")
+            print(Fore.CYAN + "║" + Fore.YELLOW + "📈  STATISTICS DASHBOARD 📈 ".center(118) + Fore.CYAN + "║")
             print(Fore.CYAN + "╠" + "═" * 120 + "╣")
             fm.show_statistics()
 
         elif choice == "10":
             print(Fore.CYAN + "╠" + "═" * 120 + "╣")
-            print(Fore.CYAN + "║" + Fore.YELLOW + "DELETE TRANSACTION".center(120) + Fore.CYAN + "║")
+            print(Fore.CYAN + "║ " + Fore.YELLOW + "🗑️  DELETE TRANSACTION 🗑️".center(120) + Fore.CYAN + " ║")
             print(Fore.CYAN + "╠" + "═" * 120 + "╣")
             fm.delete_transaction()
 
         elif choice == "9":
             print(Fore.CYAN + "╠" + "═" * 120 + "╣")
-            print(Fore.CYAN + "║" + Fore.YELLOW + "EDIT TRANSACTION".center(120) + Fore.CYAN + "║")
+            print(Fore.CYAN + "║ " + Fore.YELLOW + "✏️  EDIT TRANSACTION ✏️".center(120) + Fore.CYAN + " ║")
             print(Fore.CYAN + "╠" + "═" * 120 + "╣")
             fm.edit_transaction()
 
         elif choice == "8":
             print(Fore.CYAN + "╠" + "═" * 120 + "╣")
-            print(Fore.CYAN + "║" + Fore.YELLOW + "MONTHLY SUMMARY".center(120) + Fore.CYAN + "║")
+            print(Fore.CYAN + "║ " + Fore.YELLOW + "🗓️  MONTHLY SUMMARY 🗓️".center(120) + Fore.CYAN + " ║")
             print(Fore.CYAN + "╠" + "═" * 120 + "╣")
             while True:
                 try:
@@ -563,38 +570,38 @@ if __name__ == "__main__":
                     
         elif choice == "7":
             print(Fore.CYAN + "╠" + "═" * 120 + "╣")
-            print(Fore.CYAN + "║" + Fore.YELLOW + "SAVE TO FILE".center(120) + Fore.CYAN + "║")
+            print(Fore.CYAN + "║" + Fore.YELLOW + "💾 SAVE TO FILE 💾".center(118) + Fore.CYAN + "║")
             print(Fore.CYAN + "╠" + "═" * 120 + "╣")
             fm.save_to_file()
             print(Fore.CYAN + "║" + Fore.WHITE+ f"  THANK YOU FOR CHOOSINNG RUKT-NUZVID SECURE BANK.".ljust(120) + Fore.CYAN + "║")
             
         elif choice == "6":
             print(Fore.CYAN + "╠" + "═" * 120 + "╣")
-            print(Fore.CYAN + "║" + Fore.YELLOW + "📅 SEARCH BY DATE RANGE".center(118) + Fore.CYAN + " ║")
+            print(Fore.CYAN + "║" + Fore.YELLOW + "📅 SEARCH BY DATE RANGE 📅".center(118) + Fore.CYAN + "║")
             print(Fore.CYAN + "╠" + "═" * 120 + "╣")
             fm.search_by_date_range()
 
         elif choice =="5":
             print(Fore.CYAN + "╠" + "═" * 120 + "╣")
-            print(Fore.CYAN + "║" + Fore.YELLOW + "🔍 SEARCH BY CATEGORY".center(118) + Fore.CYAN + " ║")
+            print(Fore.CYAN + "║" + Fore.YELLOW + "🔍 SEARCH BY CATEGORY 🔍".center(118) + Fore.CYAN + "║")
             print(Fore.CYAN + "╠" + "═" * 120 + "╣")
             fm.search_by_category()
         
         elif choice == "4":
             print(Fore.CYAN + "╠" + "═" * 120 + "╣")
-            print(Fore.CYAN + "║" + Fore.YELLOW + "📋 VIEW ALL TRANSACTIONS".center(118) + Fore.CYAN + " ║")
+            print(Fore.CYAN + "║" + Fore.YELLOW + "📋 VIEW ALL TRANSACTIONS 📋".center(118) + Fore.CYAN + "║")
             print(Fore.CYAN + "╠" + "═" * 120 + "╣")
             fm.list_all()
 
         elif choice == "3":
             print(Fore.CYAN + "╠" + "═" * 120 + "╣")
-            print(Fore.CYAN + "║" + Fore.YELLOW + "📊 VIEW BALANCE".center(118) + Fore.CYAN + " ║")
+            print(Fore.CYAN + "║" + Fore.YELLOW + "📊 VIEW BALANCE 📊".center(118) + Fore.CYAN + "║")
             print(Fore.CYAN + "╠" + "═" * 120 + "╣")
             print(Fore.CYAN + "║" + Fore.WHITE+ f"  Current Balance       : ₹{fm.total_balance():.2f}".ljust(120) + Fore.CYAN + "║")
 
         elif choice == "2":
             # ADD EXPENSE
-            print(Fore.CYAN + "║" + Fore.GREEN + f"  ➖ ADD EXPENSE".ljust(118) + Fore.CYAN + " ║")
+            print(Fore.CYAN + "║" + Fore.GREEN + f"  ➖ ADD EXPENSE ➖".ljust(118) + Fore.CYAN + "║")
             # --- get amount ---
             while True:
                 raw = input(Fore.CYAN + "║" + Fore.WHITE+ f"  Enter amount: ".ljust(120) + Fore.CYAN + "║").strip()
@@ -623,7 +630,7 @@ if __name__ == "__main__":
 
         elif choice == "1":
             # ADD INCOME
-            print(Fore.CYAN + "║" + Fore.GREEN + f"  ➕ ADD INCOME".ljust(118) + Fore.CYAN + " ║")
+            print(Fore.CYAN + "║" + Fore.GREEN + f"  ➕ ADD INCOME ➕".ljust(118) + Fore.CYAN + "║")
             # --- get amount ---
             while True:
                 raw = input(Fore.CYAN + "║" + Fore.WHITE+ f"  Enter amount: ".ljust(120) + Fore.CYAN + "║").strip()
