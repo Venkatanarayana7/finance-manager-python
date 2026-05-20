@@ -158,7 +158,7 @@ FinanceManager
 I’m *Guvvala Venkata Narayana*, a first‑year B.Tech student at RGUKT Nuzvid. This project was part of my self‑designed Summer Ark 2026 series, five projects to build real engineering skills before my first semester begins. I believe in learning by building, and every line in this repository was written with that philosophy.
 
 - **GitHub**: [VENKATANARAYANA7](https://github.com/Venkatanarayana7)
-- **LinkedIn**: [VENKATA NARAYANA GUVVALA](www.linkedin.com/in/venkata-narayana-guvvala-9a568b376)
+- **LinkedIn**: [VENKATA NARAYANA GUVVALA](https://www.linkedin.com/in/venkata-narayana-guvvala-9a568b376/)
 
 _Built with discipline during Summer 2026 · Python 3.10.12 · colorama_
 
