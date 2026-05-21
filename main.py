@@ -95,8 +95,8 @@ class FinanceManager:
         print(Fore.CYAN + "║" + Fore.WHITE + " " + "-"*118 + Fore.WHITE + " " + Fore.CYAN + "║")
         for category, limit in self.budgets.items():
             # Filter transactions: must match category (case-insensitive) AND be in current month
-            spent = sum(t.amount for t in self.transactions if t.category.lower() == category.lower() and t.date[:7] == current_month)
-            remaining = limit - spent
+            spent = abs(sum(t.amount for t in self.transactions if t.category.lower() == category.lower() and t.date[:7] == current_month))
+            remaining = limit -  spent # already spent is negative
             percentage = (spent / limit * 100) if limit > 0 else 0
 
             status_color = Fore.GREEN if spent <= limit else Fore.RED
@@ -196,7 +196,7 @@ class FinanceManager:
         results = [t for t in self.transactions if start_raw <= t.date <= end_raw]
 
         if not results:
-            print(Fore.CYAN + "║" + Fore.RED + f"  No transactions between {start_raw} and {end_raw}.".ljust(118) + Fore.CYAN + " ║")
+            print(Fore.CYAN + "║" + Fore.RED + f"  No transactions between {start_raw} and {end_raw}.".ljust(120) + Fore.CYAN + "║")
             return
 
         total = sum(t.amount for t in results)
